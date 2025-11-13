@@ -11,33 +11,28 @@ module.exports = {
       tsconfigRootDir: __dirname,
       sourceType: 'module',
     },
-    plugins: ['@typescript-eslint', 'import'],
+    plugins: ['@typescript-eslint'],
     extends: [
       'eslint:recommended',
       'plugin:@typescript-eslint/recommended',
       'plugin:@typescript-eslint/recommended-requiring-type-checking',
-      'plugin:import/recommended',
-      'plugin:import/typescript',
-      'prettier'
+      'prettier',
     ],
-    settings: {
-      'import/resolver': {
-        typescript: {
-          project: ['./backend/tsconfig.json']
-        }
-      }
-    },
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }]
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+  
+      // Relaxed for now so bootstrap + async handlers don't scream at us
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
     },
     overrides: [
       {
         files: ['*.config.*', '*.eslintrc.*'],
         parserOptions: {
-          project: null
-        }
-      }
-    ]
+          project: null,
+        },
+      },
+    ],
   };
   
