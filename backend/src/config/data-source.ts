@@ -1,7 +1,11 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-
 import { env } from './env';
+
+import { User } from '../modules/users/user.entity';
+import { Organization } from '../modules/organizations/organization.entity';
+import { OrganizationMembership } from '../modules/organizations/organization-membership.entity';
+import { Project } from '../modules/projects/project.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -10,8 +14,12 @@ export const AppDataSource = new DataSource({
   username: env.DB_USER,
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
-  synchronize: false, // we'll rely on migrations later
+  synchronize: false,
   logging: false,
-  entities: [__dirname + '/../modules/**/*.entity.{ts,js}'],
-  migrations: [__dirname + '/../migrations/*.{ts,js}'],
+
+  // 👇 Explicitly register entities so CLI definitely sees them
+  entities: [User, Organization, OrganizationMembership, Project],
+
+  // For migrations when using ts-node / src/ as base
+  migrations: ['src/migrations/*.{ts,js}'],
 });
