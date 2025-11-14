@@ -15,7 +15,9 @@
   - `docs/`
 
 - Enabled Corepack and pinned Yarn (`packageManager: "yarn@4.5.0"`).
+
 - Added shared TypeScript configuration (`tsconfig.base.json`).
+
 - Bootstrapped the **backend**:
   - Node.js + TypeScript + Express
   - TypeORM configuration with clean `data-source.ts`
@@ -53,6 +55,7 @@
   - `Project`
 
 - Designed full multi-tenant structure (users ⇒ orgs ⇒ projects).
+
 - Added enums for roles, membership statuses, project visibility, etc.
 
 ### **2. Implemented TypeORM Entities**
@@ -106,12 +109,85 @@ repository → service → controller → route
 
 ---
 
+## ✅ Day 3 – DTO Validation, Authentication & JWT (2025-11-15)
+
+### ✔️ Achievements
+
+### **1. DTO & Validation Middleware**
+
+- Implemented global `validateDto` middleware using:
+  - `class-validator`
+  - `class-transformer`
+
+- Sanitizes input, removes unknown fields, throws `validation-error`.
+- Ensures every POST payload is strongly typed and validated.
+
+### **2. Centralized Error & Response Handling**
+
+- Added `AppError` hierarchy:
+  - `validation-error`
+  - `auth-error`
+  - `conflict-error`
+  - `not-found-error`
+
+- Added global `error-handler` middleware.
+- Added `sendSuccess` / `sendError` utilities for consistent API format.
+- Standardized API output:
+
+```
+{
+  success: boolean,
+  data: T | null,
+  error: { code, message, details } | null
+}
+```
+
+### **3. User Registration (`POST /users`)**
+
+- Added `CreateUserDto` (`email`, `password`, `fullName`, `avatarUrl`).
+- Added hashing via `argon2`.
+- Enforced unique email with `ConflictError('EMAIL_TAKEN')`.
+- Successfully stores users in DB.
+
+### **4. Authentication Module (`POST /auth/login`)**
+
+- Added `LoginDto`.
+- Implemented password verification via `argon2.verify`.
+- Only `AuthProvider.LOCAL` users can login.
+- Returns `accessToken` + sanitized `user` object.
+
+### **5. JWT Middleware**
+
+- Added `auth-middleware.ts`:
+  - Reads `Authorization: Bearer <token>`.
+  - Verifies token using `JWT_SECRET`.
+  - Attaches `req.user = { id, email }`.
+  - Throws `NO_TOKEN` / `INVALID_TOKEN` errors.
+
+### **6. Protected Existing Route**
+
+- `GET /users` is now protected using `authMiddleware`.
+- Full Day 3 flow tested:
+  - Register → Login → Access protected route.
+
+### ✔️ Decisions Locked In
+
+- Always validate request bodies with DTOs.
+- Full centralized error & response system across backend.
+- JWT-based authentication for all protected routes.
+- Fail-fast environment validation (e.g., missing `JWT_SECRET`).
+
+---
+
 # 📘 Summary of Week 1 (so far)
 
 We now have:
 
-- Fully structured monorepo
-- Backend running with migrations + seed
-- Core multi-tenant domain
-- First endpoints functioning
-- Production-grade architecture foundations
+- A production-grade monorepo architecture
+- Backend with migrations, seeds, and strict layering
+- Users, organizations, projects domain
+- DTO validation & centralized error handling
+- Secure user registration & login
+- JWT authorization working end-to-end
+
+ForgeCloud's core backend foundation is now fully operational and enterprise-ready.

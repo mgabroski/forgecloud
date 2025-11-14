@@ -16,7 +16,16 @@ export class UserRepository {
     });
   }
 
-  // later: findByEmail, create, etc.
+  async findByEmail(email: string): Promise<User | null> {
+    return this.repo.findOne({
+      where: { email },
+    });
+  }
+
+  async createUser(data: Partial<User>): Promise<User> {
+    const user = this.repo.create(data);
+    return this.repo.save(user);
+  }
 }
 
 export const userRepository = new UserRepository();
