@@ -6,6 +6,8 @@ import { userRouter } from './modules/users/user.routes';
 import { organizationRouter } from './modules/organizations/organization.routes';
 import { projectRouter } from './modules/projects/project.routes';
 
+import { errorHandler } from './common/middleware/error-handler';
+
 export function createApp() {
   const app = express();
 
@@ -22,6 +24,8 @@ export function createApp() {
   app.get('/', (_req, res) => {
     res.json({ message: 'ForgeCloud backend is running' });
   });
+
+  app.use(errorHandler);
 
   return app;
 }
