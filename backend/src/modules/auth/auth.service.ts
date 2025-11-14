@@ -48,7 +48,7 @@ export class AuthService {
       expiresIn: '1h',
     });
 
-    const { passwordHash, ...safeUser } = user;
+    const { passwordHash: _passwordHash, ...safeUser } = user;
 
     return {
       accessToken: token,

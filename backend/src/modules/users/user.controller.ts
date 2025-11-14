@@ -19,7 +19,7 @@ class UserController {
       const dto = req.body as CreateUserDto;
       const user = await userService.createUser(dto);
 
-      const { passwordHash, ...safeUser } = user;
+      const { passwordHash: _passwordHash, ...safeUser } = user;
       sendSuccess(res, safeUser, 201);
     } catch (err) {
       next(err);
