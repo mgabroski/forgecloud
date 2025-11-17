@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { AppDataSource } from '../config/data-source';
+import { AppDataSource } from '../../config/data-source';
 
 describe('Testing infrastructure smoke test', () => {
   it('AppDataSource should be initialized in test environment', () => {

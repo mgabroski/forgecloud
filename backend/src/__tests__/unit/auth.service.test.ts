@@ -7,12 +7,12 @@
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 
-import { AuthService } from '../modules/auth/auth.service';
-import { userRepository } from '../modules/users/user.repository';
-import { AuthProvider, User } from '../modules/users/user.entity';
-import { AuthError } from '../common/errors/auth-error';
+import { AuthService } from '../../modules/auth/auth.service';
+import { userRepository } from '../../modules/users/user.repository';
+import { AuthProvider, User } from '../../modules/users/user.entity';
+import { AuthError } from '../../common/errors/auth-error';
 
-jest.mock('../modules/users/user.repository', () => {
+jest.mock('../../modules/users/user.repository', () => {
   return {
     userRepository: {
       findByEmail: jest.fn(),

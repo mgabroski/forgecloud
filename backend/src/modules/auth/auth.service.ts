@@ -6,6 +6,7 @@ import { AuthProvider, User } from '../users/user.entity';
 import { LoginDto } from './dto/login-dto';
 import { env } from '../../config/env';
 import { AuthError } from '../../common/errors/auth-error';
+import { UpdateMeDto } from './dto/update-me-dto';
 
 interface JwtPayload {
   sub: string;
@@ -55,6 +56,50 @@ export class AuthService {
       accessToken: token,
       user: safeUser as Omit<User, 'passwordHash'>,
     };
+  }
+
+  /**
+   * Returns the currently authenticated user (sanitized, without passwordHash),
+   * looked up by email.
+   */
+  async getMeByEmail(email: string): Promise<Omit<User, 'passwordHash'>> {
+    const user = await userRepository.findByEmail(email);
+
+    if (!user) {
+      throw new AuthError('User not found', 'USER_NOT_FOUND');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _passwordHash, ...safeUser } = user;
+
+    return safeUser as Omit<User, 'passwordHash'>;
+  }
+
+  /**
+   * Updates the profile of the currently authenticated user (fullName, avatarUrl, etc.),
+   * looked up by email.
+   */
+  async updateMeByEmail(email: string, dto: UpdateMeDto): Promise<Omit<User, 'passwordHash'>> {
+    const user = await userRepository.findByEmail(email);
+
+    if (!user) {
+      throw new AuthError('User not found', 'USER_NOT_FOUND');
+    }
+
+    if (dto.fullName !== undefined) {
+      user.fullName = dto.fullName;
+    }
+
+    if (dto.avatarUrl !== undefined) {
+      user.avatarUrl = dto.avatarUrl;
+    }
+
+    const saved = await userRepository.save(user);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _passwordHash, ...safeUser } = saved;
+
+    return safeUser as Omit<User, 'passwordHash'>;
   }
 }
 

@@ -6,7 +6,7 @@ yarn lint
 echo "🔍 Running backend tests before push..."
 cd backend
 
-yarn test:ci
+yarn test:all
 RESULT=$?
 
 if [ $RESULT -ne 0 ]; then

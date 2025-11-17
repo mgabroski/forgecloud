@@ -5,9 +5,9 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import request from 'supertest';
-import { createApp } from '../app';
-import { AppDataSource } from '../config/data-source';
-import { User } from '../modules/users/user.entity';
+import { createApp } from '../../app';
+import { AppDataSource } from '../../config/data-source';
+import { User } from '../../modules/users/user.entity';
 
 const app = createApp();
 

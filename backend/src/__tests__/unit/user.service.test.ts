@@ -5,12 +5,12 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import argon2 from 'argon2';
-import { UserService } from '../modules/users/user.service';
-import { ConflictError } from '../common/errors/conflict-error';
-import { userRepository } from '../modules/users/user.repository';
-import { AuthProvider } from '../modules/users/user.entity';
+import { UserService } from '../../modules/users/user.service';
+import { ConflictError } from '../../common/errors/conflict-error';
+import { userRepository } from '../../modules/users/user.repository';
+import { AuthProvider } from '../../modules/users/user.entity';
 
-jest.mock('../modules/users/user.repository', () => {
+jest.mock('../../modules/users/user.repository', () => {
   return {
     userRepository: {
       findAll: jest.fn(),

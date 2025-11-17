@@ -14,9 +14,12 @@
     "migration:run": "yarn typeorm migration:run",
     "migration:revert": "yarn typeorm migration:revert",
     "seed:core": "ts-node src/scripts/seed-core.ts",
-    "test": "NODE_ENV=test jest",
-    "test:watch": "NODE_ENV=test jest --watch",
-    "test:ci": "NODE_ENV=test jest --runInBand --coverage"
+    "test": "NODE_ENV=test jest --selectProjects unit",
+    "test:unit": "NODE_ENV=test jest --selectProjects unit",
+    "test:integration": "NODE_ENV=test jest --selectProjects integration",
+    "test:all": "NODE_ENV=test jest",
+    "test:watch": "NODE_ENV=test jest --watch --selectProjects unit",
+    "test:ci": "NODE_ENV=test jest --runInBand --coverage --selectProjects integration"
   },
   "dependencies": {
     "argon2": "^0.44.0",

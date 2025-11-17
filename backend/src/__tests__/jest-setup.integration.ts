@@ -1,4 +1,4 @@
-// backend/src/__tests__/jest-setup.ts
+// backend/src/__tests__/jest-setup.integration.ts
 import { AppDataSource } from '../config/data-source';
 
 let consoleErrorSpy: jest.SpyInstance;

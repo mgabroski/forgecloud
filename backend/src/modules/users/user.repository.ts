@@ -22,8 +22,18 @@ export class UserRepository {
     });
   }
 
+  async findById(id: string): Promise<User | null> {
+    return this.repo.findOne({
+      where: { id },
+    });
+  }
+
   async createUser(data: Partial<User>): Promise<User> {
     const user = this.repo.create(data);
+    return this.repo.save(user);
+  }
+
+  async save(user: User): Promise<User> {
     return this.repo.save(user);
   }
 }
