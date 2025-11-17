@@ -48,6 +48,7 @@ export class AuthService {
       expiresIn: '1h',
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _passwordHash, ...safeUser } = user;
 
     return {

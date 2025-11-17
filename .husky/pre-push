@@ -2,3 +2,16 @@
 
 echo "🔍 Running lint before push..."
 yarn lint
+
+echo "🔍 Running backend tests before push..."
+cd backend
+
+yarn test:ci
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo "❌ Tests failed. Push aborted."
+  exit 1
+fi
+
+echo "✅ Tests passed. Proceeding with push."

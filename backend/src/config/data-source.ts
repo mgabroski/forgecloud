@@ -17,9 +17,7 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: false,
 
-  // 👇 Explicitly register entities so CLI definitely sees them
   entities: [User, Organization, OrganizationMembership, Project],
 
-  // For migrations when using ts-node / src/ as base
   migrations: ['src/migrations/*.{ts,js}'],
 });

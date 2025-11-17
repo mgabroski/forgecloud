@@ -19,6 +19,7 @@ class UserController {
       const dto = req.body as CreateUserDto;
       const user = await userService.createUser(dto);
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordHash: _passwordHash, ...safeUser } = user;
       sendSuccess(res, safeUser, 201);
     } catch (err) {
