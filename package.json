@@ -4,7 +4,9 @@
   "version": "0.0.1",
   "workspaces": [
     "backend",
-    "frontend"
+    "frontend",
+    "infra",
+    "docs"
   ],
   "scripts": {
     "prepare": "husky",

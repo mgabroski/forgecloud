@@ -1,6 +1,8 @@
 import 'reflect-metadata';
-import { AppDataSource } from '../config/data-source';
 
+import argon2 from 'argon2';
+
+import { AppDataSource } from '../config/data-source';
 import { User, AuthProvider } from '../modules/users/user.entity';
 import { Organization, OrganizationPlan } from '../modules/organizations/organization.entity';
 import {
@@ -23,13 +25,16 @@ async function seed() {
 
   // 1) Seed user
   const seedEmail = 'founder@forgecloud.dev';
+  const seedPassword = 'ForgeCloud#123';
 
   let user = await userRepo.findOne({ where: { email: seedEmail } });
 
   if (!user) {
+    const passwordHash = await argon2.hash(seedPassword);
+
     user = userRepo.create({
       email: seedEmail,
-      passwordHash: null, // later we'll add proper auth
+      passwordHash: passwordHash,
       authProvider: AuthProvider.LOCAL,
       fullName: 'ForgeCloud Founder',
       avatarUrl: null,
