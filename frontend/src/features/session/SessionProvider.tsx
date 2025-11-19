@@ -1,4 +1,3 @@
-// src/features/session/SessionProvider.tsx
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { apiGet, ApiError, getAccessToken, clearAccessToken } from '@shared/api/client';
@@ -7,6 +6,7 @@ import type { AuthUser, OrganizationSummary, SessionContextValue, SessionState }
 interface AuthMePayload {
   user: AuthUser;
   organizations: OrganizationSummary[];
+  activeOrganizationId: string | null;
 }
 
 interface AuthMeEnvelope {
@@ -67,14 +67,16 @@ export function SessionProvider({ children }: SessionProviderProps) {
         return;
       }
 
-      const { user, organizations } = res.data;
-      const firstOrgId = organizations[0]?.id ?? null;
+      const { user, organizations, activeOrganizationId } = res.data;
+
+      const effectiveActiveOrgId =
+        activeOrganizationId !== null ? activeOrganizationId : (organizations[0]?.id ?? null);
 
       setState({
         status: 'authenticated',
         user,
         organizations,
-        activeOrgId: firstOrgId,
+        activeOrgId: effectiveActiveOrgId,
         error: null,
       });
     } catch (err: unknown) {

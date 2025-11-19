@@ -1,4 +1,3 @@
-// src/app/ProtectedRoute.tsx
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSession } from '@features/session/SessionProvider';

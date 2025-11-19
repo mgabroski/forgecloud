@@ -26,6 +26,21 @@ export class OrganizationMembershipRepository {
 
     return this.repo.save(membership);
   }
+
+  /**
+   * Returns all ACTIVE memberships for a given user, with organizations loaded.
+   * Ordered by creation time ASC so we can safely pick the first as default workspace.
+   */
+  async findActiveMembershipsForUser(userId: string): Promise<OrganizationMembership[]> {
+    return this.repo.find({
+      where: {
+        userId,
+        status: OrganizationMembershipStatus.ACTIVE,
+      },
+      relations: ['organization'],
+      order: { createdAt: 'ASC' },
+    });
+  }
 }
 
 export const organizationMembershipRepository = new OrganizationMembershipRepository();

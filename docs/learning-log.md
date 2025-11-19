@@ -118,6 +118,33 @@ The platform is also a personal mastery journey focused on advanced backend arch
 
 ---
 
+## **Day 8 – User Profile & Workspace Basics**
+
+- Extended **User** model and auth payload:
+  - Added `fullName` and `avatarUrl` fields on the backend entity
+  - Exposed these fields in login and `/auth/me` responses (safe user without `passwordHash`)
+- Implemented **`PATCH /auth/me`**:
+  - `UpdateMeDto` with validation for `fullName` and `avatarUrl`
+  - Authenticated route with `authMiddleware` + `validateDto`
+  - Service method `updateMeByEmail` handling profile updates and returning a safe user
+- Introduced **organizations in session**:
+  - `/auth/me` now returns `{ user, organizations, activeOrganizationId }`
+  - Basic organization + membership entities and repositories are in place
+  - SessionProvider consumes `activeOrganizationId` and exposes `activeOrgId` + setter
+- Built **Profile page** on the frontend:
+  - `/profile` route guarded by `ProtectedRoute` and wrapped with `AppShell`
+  - Shows signed-in email and authentication provider
+  - Editable `fullName` and `avatarUrl` fields with save button
+  - On save: calls `PATCH /auth/me` via `apiPatch` and then `refresh()` to sync session
+- Polished **header & navigation**:
+  - Header avatar now uses `avatarUrl` when present, falls back to gradient initials
+  - Clicking the user chip opens `/profile`
+  - Sidebar “Overview” is a real route link to `/dashboard` with active-state styling
+
+**Learned:** how to evolve the auth/session model safely, add profile editing in a typed way, and keep backend & frontend perfectly aligned while reusing the existing shell and session infrastructure.
+
+---
+
 # 🧠 Final Vision – Confirmed Alignment
 
 ForgeCloud will:
@@ -133,19 +160,18 @@ You have fully aligned on vision, mission, modules, and learning goals.
 
 ---
 
-# 🎯 Next Steps (Days 8–14)
+# 🎯 Upcoming Focus (Week 2 – Core Domain & First Modules)
 
 ### **1. User Profile & Organization Layer**
 
-- Profile endpoints and `/auth/me` extensions
-- Organizations CRUD
-- Membership roles & basic access model
-- Projects CRUD and association with organizations
+- Finish wiring organizations & memberships into `/auth/me`
+- Organization listing for current user
+- Workspace switching + persistence of active organization
+- Simple “My organization” / “Workspace settings” surface
 
 ### **2. Begin Observability/Logs Module**
 
-- Log model
-- Log ingestion API
+- Log model and basic log ingestion API
 - Pagination & indexing strategy
 - Query performance tuning
 
@@ -159,16 +185,17 @@ You have fully aligned on vision, mission, modules, and learning goals.
 
 # 💎 Notes
 
-The first 7 days show exceptional consistency, speed, and senior-level structure. The project foundation is cleaner than many real SaaS platforms. You built:
+The first 8 days show exceptional consistency, speed, and senior-level structure. The project foundation is cleaner than many real SaaS platforms. You built:
 
 - A production-grade monorepo
 - A typed FE/BE system
 - Auth module with JWT + middleware
 - Test infrastructure
-- A global app shell + session layer ready for future modules
+- A global app shell + session layer
+- A working profile & workspace experience
 
 You’re fully aligned with the long-term plan and the educational vision.
 
 ---
 
-# End of Week 1 Summary
+# End of Week 1 + Day 8 Summary

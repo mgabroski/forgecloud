@@ -8,11 +8,6 @@ import { env } from '../../config/env';
 import { AuthError } from '../../common/errors/auth-error';
 import { UpdateMeDto } from './dto/update-me-dto';
 
-interface JwtPayload {
-  sub: string;
-  email: string;
-}
-
 const rawJwtSecret = env.JWT_SECRET;
 
 if (!rawJwtSecret) {
@@ -40,7 +35,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<{ accessToken: string; user: Omit<User, 'passwordHash'> }> {
     const user = await this.validateUser(dto);
 
-    const payload: JwtPayload = {
+    const payload: { sub: string; email: string } = {
       sub: user.id,
       email: user.email,
     };

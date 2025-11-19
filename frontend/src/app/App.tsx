@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from '@features/auth/pages/LoginPage';
 import DashboardPage from '@features/dashboard/pages/DashboardPage';
+import ProfilePage from '@features/profile/pages/ProfilePage';
 import { getAccessToken } from '@shared/api/client';
 import ProtectedRoute from '@app/ProtectedRoute';
 import { AppShell } from '@app/layout/AppShell';
@@ -23,6 +24,17 @@ function App() {
           <ProtectedRoute>
             <AppShell>
               <DashboardPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <ProfilePage />
             </AppShell>
           </ProtectedRoute>
         }

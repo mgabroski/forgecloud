@@ -24,17 +24,8 @@ class AuthController {
         return next(new AuthError('Unauthorized', 'UNAUTHORIZED'));
       }
 
-      const user = await authService.getMeByEmail(req.user.email);
-
-      // 🔒 Avoid any caching of /auth/me responses
-      res.setHeader('Cache-Control', 'no-store, max-age=0');
-
-      // 🧱 Final contract: data = { user, organizations }
-      // Organizations are empty for now; we’ll wire real orgs later.
-      sendSuccess(res, {
-        user,
-        organizations: [],
-      });
+      const session = await authService.getMeByEmail(req.user.email);
+      sendSuccess(res, session);
     } catch (err) {
       next(err);
     }
@@ -47,9 +38,9 @@ class AuthController {
       }
 
       const dto = req.body as UpdateMeDto;
+      const session = await authService.updateMeByEmail(req.user.email, dto);
 
-      const result = await authService.updateMeByEmail(req.user.email, dto);
-      sendSuccess(res, result);
+      sendSuccess(res, session);
     } catch (err) {
       next(err);
     }

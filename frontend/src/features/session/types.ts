@@ -2,10 +2,13 @@ import type { AuthUser as ApiAuthUser } from '@shared/api/client';
 
 export type AuthUser = ApiAuthUser;
 
+export type OrganizationRole = 'OWNER' | 'ADMIN' | 'MEMBER';
+
 export interface OrganizationSummary {
   id: string;
   name: string;
   slug?: string;
+  role: OrganizationRole;
 }
 
 export type SessionStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated' | 'error';

@@ -28,6 +28,10 @@ export function AppHeader() {
     navigate('/login', { replace: true });
   };
 
+  const handleOpenProfile = () => {
+    navigate('/profile');
+  };
+
   return (
     <header
       style={{
@@ -87,7 +91,7 @@ export function AppHeader() {
           fontSize: '0.8rem',
         }}
       >
-        {/* Workspace selector (placeholder) */}
+        {/* Workspace selector */}
         <div
           style={{
             display: 'flex',
@@ -155,11 +159,17 @@ export function AppHeader() {
             gap: '0.9rem',
           }}
         >
-          <div
+          <button
+            type="button"
+            onClick={handleOpenProfile}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.55rem',
+              padding: 0,
+              border: 'none',
+              background: 'none',
+              cursor: 'pointer',
             }}
           >
             <div
@@ -167,17 +177,36 @@ export function AppHeader() {
                 width: 32,
                 height: 32,
                 borderRadius: '9999px',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%)',
+                background: user?.avatarUrl
+                  ? 'transparent'
+                  : 'linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#ffffff',
                 fontSize: '0.8rem',
                 fontWeight: 600,
-                boxShadow: '0 8px 20px rgba(37,99,235,0.35)',
+                boxShadow: user?.avatarUrl
+                  ? '0 8px 20px rgba(15,23,42,0.25)'
+                  : '0 8px 20px rgba(37,99,235,0.35)',
+                overflow: 'hidden',
               }}
             >
-              {initials}
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={displayName}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '9999px',
+                    display: 'block',
+                  }}
+                />
+              ) : (
+                initials
+              )}
             </div>
             <div
               style={{
@@ -204,7 +233,7 @@ export function AppHeader() {
                 {user?.email}
               </span>
             </div>
-          </div>
+          </button>
 
           <button
             type="button"

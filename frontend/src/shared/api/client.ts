@@ -80,7 +80,6 @@ async function request<T>(method: HttpMethod, path: string, body?: unknown): Pro
     headers.Authorization = `Bearer ${token}`;
   }
 
-  // ⬇️ NO try/catch here – we use Promise.catch instead
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
@@ -92,7 +91,6 @@ async function request<T>(method: HttpMethod, path: string, body?: unknown): Pro
     });
   });
 
-  // TypeScript: res is Response here (because we always throw in catch)
   if (res.status === 204) {
     return {} as T;
   }
@@ -125,11 +123,18 @@ export function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return request<T>('POST', path, body);
 }
 
-// Types aligned with backend (simplified for now)
+export function apiPatch<T>(path: string, body?: unknown): Promise<T> {
+  return request<T>('PATCH', path, body);
+}
+
+export type AuthProvider = 'local' | 'google' | 'github' | 'other';
+
 export interface AuthUser {
   id: string;
   email: string;
   fullName: string | null;
+  avatarUrl: string | null;
+  authProvider: AuthProvider;
 }
 
 export interface LoginResponse {

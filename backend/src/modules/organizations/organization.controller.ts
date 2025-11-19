@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Response, NextFunction } from 'express';
 import { organizationService } from './organization.service';
 import { sendSuccess } from '../../common/utils/response';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -7,7 +7,7 @@ import { AuthRequest } from '../../common/middleware/auth-middleware';
 import { AuthError } from '../../common/errors/auth-error';
 
 class OrganizationController {
-  async getOrganizations(_req: Request, res: Response): Promise<void> {
+  async getOrganizations(_req: AuthRequest, res: Response): Promise<void> {
     const organizations = await organizationService.getAllOrganizations();
     sendSuccess(res, organizations);
   }

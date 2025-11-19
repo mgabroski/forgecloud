@@ -1,5 +1,6 @@
 // src/app/layout/AppShell.tsx
 import type { ReactNode } from 'react';
+import { NavLink } from 'react-router-dom';
 import { AppHeader } from './AppHeader';
 
 interface AppShellProps {
@@ -59,17 +60,22 @@ export function AppShell({ children }: AppShellProps) {
               fontSize: '0.86rem',
             }}
           >
-            <div
-              style={{
+            {/* Overview → Dashboard */}
+            <NavLink
+              to="/dashboard"
+              style={({ isActive }) => ({
                 padding: '0.35rem 0.6rem',
                 borderRadius: '0.5rem',
-                backgroundColor: 'rgba(37,99,235,0.08)',
-                color: 'var(--fc-text-main)',
-                fontWeight: 500,
-              }}
+                backgroundColor: isActive ? 'rgba(37,99,235,0.08)' : 'transparent',
+                color: isActive ? 'var(--fc-text-main)' : 'var(--fc-text-subtle)',
+                fontWeight: isActive ? 500 : 400,
+                textDecoration: 'none',
+              })}
             >
               Overview
-            </div>
+            </NavLink>
+
+            {/* Placeholders for future modules */}
             <div
               style={{
                 padding: '0.32rem 0.6rem',

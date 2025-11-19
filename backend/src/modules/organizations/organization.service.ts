@@ -4,6 +4,14 @@ import { organizationRepository } from './organization.repository';
 import { organizationMembershipRepository } from './organization-membership.repository';
 import { ValidationError } from '../../common/errors/validation-error';
 import { Organization, OrganizationPlan } from './organization.entity';
+import { OrganizationRole } from './organization-membership.entity';
+
+export interface UserOrganizationSummary {
+  id: string;
+  name: string;
+  slug: string;
+  role: OrganizationRole;
+}
 
 export class OrganizationService {
   async getAllOrganizations(): Promise<Organization[]> {
@@ -44,6 +52,21 @@ export class OrganizationService {
     }
 
     return organizationRepository.save(org);
+  }
+
+  /**
+   * Returns organizations for a given user based on ACTIVE memberships.
+   * This is what we will expose via /organizations (\"my orgs\") and /auth/me.
+   */
+  async getOrganizationsForUser(userId: string): Promise<UserOrganizationSummary[]> {
+    const memberships = await organizationMembershipRepository.findActiveMembershipsForUser(userId);
+
+    return memberships.map((membership) => ({
+      id: membership.organizationId,
+      name: membership.organization.name,
+      slug: membership.organization.slug,
+      role: membership.role,
+    }));
   }
 }
 

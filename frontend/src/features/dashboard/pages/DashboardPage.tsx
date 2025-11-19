@@ -1,4 +1,3 @@
-// src/features/dashboard/pages/DashboardPage.tsx
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@features/session/SessionProvider';
 
