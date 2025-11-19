@@ -3,13 +3,17 @@ import LoginPage from '@features/auth/pages/LoginPage';
 import DashboardPage from '@features/dashboard/pages/DashboardPage';
 import { getAccessToken } from '@shared/api/client';
 import ProtectedRoute from '@app/ProtectedRoute';
+import { AppShell } from '@app/layout/AppShell';
 
 function App() {
   const isAuthenticated = !!getAccessToken();
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} />} />
+      <Route
+        path="/"
+        element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+      />
 
       <Route path="/login" element={<LoginPage />} />
 
@@ -17,13 +21,15 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <AppShell>
+              <DashboardPage />
+            </AppShell>
           </ProtectedRoute>
         }
       />
 
       {/* Fallback: unknown routes → root redirect */}
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

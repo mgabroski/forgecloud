@@ -25,7 +25,16 @@ class AuthController {
       }
 
       const user = await authService.getMeByEmail(req.user.email);
-      sendSuccess(res, user);
+
+      // 🔒 Avoid any caching of /auth/me responses
+      res.setHeader('Cache-Control', 'no-store, max-age=0');
+
+      // 🧱 Final contract: data = { user, organizations }
+      // Organizations are empty for now; we’ll wire real orgs later.
+      sendSuccess(res, {
+        user,
+        organizations: [],
+      });
     } catch (err) {
       next(err);
     }

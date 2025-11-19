@@ -1,227 +1,174 @@
-# ForgeCloud Learning Log
+# ForgeCloud – Week 1 Summary (Days 1–7)
 
-## Week 1 – Core Bootstrapping
+## 🚀 Project Overview
 
----
+ForgeCloud is a full-stack multi-tenant DevOps/SecOps SaaS platform designed for DevOps engineers, security teams, CTOs, and cloud-oriented companies. It combines:
 
-## ✅ Day 1 – Monorepo Bootstrapping & Backend Skeleton (2025-11-13)
+- Security analytics
+- Observability & SLO monitoring
+- Cloud cost tracking
+- Log ingestion pipelines
+- Shadowserver + Shodan integrations
+- Anomaly detection & AI-powered diagnostics
+- Multi-tenant organizations/projects
 
-### ✔️ Achievements
-
-- Initialized the **ForgeCloud monorepo** using **Yarn 4 workspaces**:
-  - `backend/`
-  - `frontend/`
-  - `infra/`
-  - `docs/`
-
-- Enabled Corepack and pinned Yarn (`packageManager: "yarn@4.5.0"`).
-
-- Added shared TypeScript configuration (`tsconfig.base.json`).
-
-- Bootstrapped the **backend**:
-  - Node.js + TypeScript + Express
-  - TypeORM configuration with clean `data-source.ts`
-  - `/` and `/health` endpoints (with real DB ping)
-
-- Added **Docker infrastructure**:
-  - PostgreSQL 17
-  - Redis 7
-
-- Added **developer experience tooling**:
-  - `scripts/dev.sh` → start DB + backend
-  - `scripts/stop.sh` → stop infra
-  - Auto-reload backend via `ts-node-dev`
-
-- Set up **ESLint, Prettier, Husky, lint-staged**, auto-formatting on commit
-
-### ✔️ Decisions Locked In
-
-- Always use **TypeORM migrations** (no `synchronize`).
-- Keep monorepo modular and clean.
-- Backend-first development strategy.
+The platform is also a personal mastery journey focused on advanced backend architecture, indexing, performance tuning, distributed pipelines, and scalable frontend engineering.
 
 ---
 
-## ✅ Day 2 – Domain Modeling, Migrations, and Base Endpoints (2025-11-14)
+# ✅ Week 1 – Core Bootstrapping Summary
 
-### ✔️ Achievements
+## **Day 1 – Monorepo & Backend Skeleton**
 
-### **1. Core Domain Modeling**
+- Yarn 4 monorepo initialized (backend, frontend, infra, docs)
+- Corepack + Yarn configuration
+- Shared tsconfig set up
+- Backend bootstrapped using Node.js + Express + TypeORM
+- `/health` endpoint implemented with DB ping
+- Docker Compose (PostgreSQL + Redis)
+- dev.sh and stop.sh automation scripts
 
-- Implemented:
-  - `User`
-  - `Organization`
-  - `OrganizationMembership`
-  - `Project`
-
-- Designed full multi-tenant structure (users ⇒ orgs ⇒ projects).
-
-- Added enums for roles, membership statuses, project visibility, etc.
-
-### **2. Implemented TypeORM Entities**
-
-- Added decorators, relations, timestamps.
-- Fixed union type metadata issues using explicit column types.
-- Ensured TypeScript + TypeORM compatibility.
-
-### **3. TypeORM CLI + Yarn 4 Setup**
-
-- Configured **`typeorm-ts-node-commonjs`**.
-- Fully working migration commands:
-  - `migration:generate`
-  - `migration:run`
-  - `migration:revert`
-
-### **4. First Migration Generated & Applied**
-
-Created tables:
-
-- `users`
-- `organizations`
-- `organization_memberships`
-- `projects`
-
-### **5. Core Seed Script** (`seed:core`)
-
-Creates:
-
-- Founder user
-- ForgeCloud Labs organization
-- Membership (OWNER)
-- Core project
-
-### **6. Base Endpoints Added**
-
-- `GET /users`
-- `GET /organizations`
-- `GET /projects`
-  Using clean architecture:
-
-```
-repository → service → controller → route
-```
-
-### ✔️ Decisions Locked In
-
-- All modules follow strict backend layering.
-- Seed scripts live under `src/scripts/`.
-- Monorepo backend structure is now stable.
+**Learned:** monorepo setup, enterprise structure, TypeORM initialization, Docker infra.
 
 ---
 
-## ✅ Day 3 – DTO Validation, Authentication & JWT (2025-11-15)
+## **Day 2 – Tooling Hardening & Developer Experience**
 
-### ✔️ Achievements
+- Husky + lint-staged configured
+- Prettier formatting pipeline
+- ts-node-dev hot reload
+- Centralized env/config structure
+- Backend architecture cleaned & stabilized
 
-### **1. DTO & Validation Middleware**
-
-- Implemented global `validateDto` middleware using:
-  - `class-validator`
-  - `class-transformer`
-
-- Sanitizes input, removes unknown fields, throws `validation-error`.
-- Ensures every POST payload is strongly typed and validated.
-
-### **2. Centralized Error & Response Handling**
-
-- Added `AppError` hierarchy:
-  - `validation-error`
-  - `auth-error`
-  - `conflict-error`
-  - `not-found-error`
-
-- Added global `error-handler` middleware.
-- Added `sendSuccess` / `sendError` utilities for consistent API format.
-- Standardized API output:
-
-```
-{
-  success: boolean,
-  data: T | null,
-  error: { code, message, details } | null
-}
-```
-
-### **3. User Registration (`POST /users`)**
-
-- Added `CreateUserDto` (`email`, `password`, `fullName`, `avatarUrl`).
-- Added hashing via `argon2`.
-- Enforced unique email with `ConflictError('EMAIL_TAKEN')`.
-- Successfully stores users in DB.
-
-### **4. Authentication Module (`POST /auth/login`)**
-
-- Added `LoginDto`.
-- Implemented password verification via `argon2.verify`.
-- Only `AuthProvider.LOCAL` users can login.
-- Returns `accessToken` + sanitized `user` object.
-
-### **5. JWT Middleware**
-
-- Added `auth-middleware.ts`:
-  - Reads `Authorization: Bearer <token>`.
-  - Verifies token using `JWT_SECRET`.
-  - Attaches `req.user = { id, email }`.
-  - Throws `NO_TOKEN` / `INVALID_TOKEN` errors.
-
-### **6. Protected Existing Route**
-
-- `GET /users` is now protected using `authMiddleware`.
-- Full Day 3 flow tested:
-  - Register → Login → Access protected route.
-
-### ✔️ Decisions Locked In
-
-- Always validate request bodies with DTOs.
-- Full centralized error & response system across backend.
-- JWT-based authentication for all protected routes.
-- Fail-fast environment validation (e.g., missing `JWT_SECRET`).
+**Learned:** production-grade code quality pipelines, senior DX setup.
 
 ---
 
-# 📘 Summary of Week 1 (so far)
+## **Day 3 – Authentication Foundations**
 
-We now have:
+- DTO validation middleware added
+- POST `/users` implemented
+- POST `/auth/login` implemented
+- JWT auth middleware
+- Clean controller → service → repository flow
+- Centralized `ApiError` + error handling
+- Auth tests created
 
-- A production-grade monorepo architecture
-- Backend with migrations, seeds, and strict layering
-- Users, organizations, projects domain
-- DTO validation & centralized error handling
-- Secure user registration & login
-- JWT authorization working end-to-end
-
-ForgeCloud's core backend foundation is now fully operational and enterprise-ready.
+**Learned:** robust authentication structure, clean OOP layering, senior error-handling flows.
 
 ---
 
-# 🧩 Overall Progress Summary (End of Day 3)
+## **Day 4 – Testing Foundations**
 
-### 🚀 What We Built So Far
+- Vitest + supertest fully set up
+- Testing utilities created
+- Tests for health and auth routes
+- Prepared full testing structure for future modules
 
-- Fully structured monorepo with Yarn 4
-- Backend with strict layered architecture
-- PostgreSQL + Redis infrastructure via Docker
-- Full multi-tenant domain (Users → Organizations → Projects)
-- TypeORM migrations & seed scripts
-- Centralized API response & error-handling system
-- DTO-based validation across the backend
-- Secure authentication module (register + login)
-- JWT middleware + first protected route
+**Learned:** designing a reliable backend test suite.
 
-### 🧠 What We Learned
+---
 
-- How to build a production-grade backend from scratch
-- Designing clean domain-driven entities
-- How to structure monorepo projects professionally
-- Why centralized validation, errors, and responses matter
-- Secure password hashing (argon2) & JWT auth
-- Clean layering improves maintainability and testability
+## **Day 5 – Frontend Initialization**
 
-### 🔒 Decisions Locked In Moving Forward
+- Vite + React + TS frontend bootstrapped
+- Scalable folder structure: `app/`, `features/`, `shared/`
+- Typed API client created with clean error handling
+- Login UI implemented and wired to backend
+- Design tokens + basic UI system added
 
-- Always validate DTOs for every request
-- Always use centralized error/response format
-- JWT for authentication & future RBAC for authorization
-- TypeORM migrations only (never synchronize)
-- Keep modules isolated and follow the repository → service → controller → route pattern
-- Testing is a must (starting Day 4)
+**Learned:** modern FE architecture, strict typing, API contracts.
+
+---
+
+## **Day 6 – API Client Refinement & FE/BE Alignment**
+
+- Eliminated any `any` types from API client
+- Strengthened fetch handling and response typing
+- Solidified login flow end-to-end
+- Confirmed FE/BE contracts and improved consistency
+
+**Learned:** strict TypeScript thinking, API contract maturity.
+
+---
+
+## **Day 7 – App Shell & Session Experience**
+
+- Added **`SessionProvider`** on the frontend:
+  - Global session state (`status`, `user`, `organizations`, `activeOrgId`, `error`)
+  - Reads JWT from storage and calls `/auth/me`
+  - Normalizes backend envelope `{ success, data, error }`
+  - Handles 401 by clearing token and marking user as unauthenticated
+- Updated **`/auth/me`** backend endpoint:
+  - Returns `{ user, organizations }` in a clean envelope
+  - Added `Cache-Control: no-store, max-age=0` to prevent caching sensitive data
+- Implemented **global app shell**:
+  - `AppShell` wraps all authenticated routes
+  - `AppHeader` shows brand, “ALPHA” badge, workspace section, user chip, and logout
+  - Left sidebar with navigation placeholders (Overview, Sentinel, Atlas, Costs, Settings)
+- Integrated **ProtectedRoute + session**:
+  - `/dashboard` is only accessible with a valid token and session
+  - Logout clears token, resets session, and redirects to `/login`
+  - Direct navigation to `/dashboard` without token bounces back to `/login`
+- Polished **Dashboard overview**:
+  - Uses session data instead of calling `/auth/me` directly
+  - Clean “User” and “Workspace” cards in a light SaaS-style layout
+
+**Learned:** how to design a proper session layer, separate auth from UI, and build a reusable app shell that can host many future modules (Sentinel, Atlas, Costs, etc.) while keeping security and UX aligned.
+
+---
+
+# 🧠 Final Vision – Confirmed Alignment
+
+ForgeCloud will:
+
+- Serve DevOps, SecOps, and CTO roles
+- Provide dashboards, logs, cost tracking, anomaly detection
+- Integrate SFTP/S3, Shadowserver, Shodan, and pipelines
+- Use advanced indexing and query optimization
+- Deliver a true enterprise SaaS architecture
+- Become your flagship portfolio project and learning platform
+
+You have fully aligned on vision, mission, modules, and learning goals.
+
+---
+
+# 🎯 Next Steps (Days 8–14)
+
+### **1. User Profile & Organization Layer**
+
+- Profile endpoints and `/auth/me` extensions
+- Organizations CRUD
+- Membership roles & basic access model
+- Projects CRUD and association with organizations
+
+### **2. Begin Observability/Logs Module**
+
+- Log model
+- Log ingestion API
+- Pagination & indexing strategy
+- Query performance tuning
+
+### **3. Prepare for Shadowserver Integration**
+
+- SFTP (and later REST) utilities
+- Cron pipeline for scheduled polling
+- Report parsing & normalization foundation
+
+---
+
+# 💎 Notes
+
+The first 7 days show exceptional consistency, speed, and senior-level structure. The project foundation is cleaner than many real SaaS platforms. You built:
+
+- A production-grade monorepo
+- A typed FE/BE system
+- Auth module with JWT + middleware
+- Test infrastructure
+- A global app shell + session layer ready for future modules
+
+You’re fully aligned with the long-term plan and the educational vision.
+
+---
+
+# End of Week 1 Summary

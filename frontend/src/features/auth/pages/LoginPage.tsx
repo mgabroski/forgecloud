@@ -6,9 +6,17 @@ import { useNavigate } from 'react-router-dom';
 import type { LoginResponse } from '@shared/api/client';
 import { apiPost, ApiError, setAccessToken } from '@shared/api/client';
 import { GoogleLoginButton } from '@features/auth/components/GoogleLoginButton';
+import { useSession } from '@features/session/SessionProvider';
+
+interface LoginEnvelope {
+  success: boolean;
+  data: LoginResponse | null;
+  error: unknown | null;
+}
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { refresh } = useSession();
 
   // Default to your seeded dev user
   const [email, setEmail] = useState('founder@forgecloud.dev');
@@ -23,12 +31,21 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await apiPost<LoginResponse>('/auth/login', {
+      const res = await apiPost<LoginEnvelope>('/auth/login', {
         email,
         password,
       });
 
-      setAccessToken(res.accessToken);
+      if (!res.success || !res.data) {
+        throw new ApiError('Login failed.', { body: res });
+      }
+
+      // Only use what we actually need: the token
+      setAccessToken(res.data.accessToken);
+
+      // Sync global session state with backend
+      await refresh();
+
       navigate('/dashboard');
     } catch (err: unknown) {
       const apiError = err instanceof ApiError ? err : undefined;

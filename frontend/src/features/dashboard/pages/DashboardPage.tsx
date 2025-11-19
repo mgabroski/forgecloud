@@ -1,64 +1,19 @@
-import { useEffect, useState } from 'react';
+// src/features/dashboard/pages/DashboardPage.tsx
 import { useNavigate } from 'react-router-dom';
-import type { AuthUser } from '@shared/api/client';
-import { ApiError, apiGet, clearAccessToken, getAccessToken } from '@shared/api/client';
-
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-}
+import { useSession } from '@features/session/SessionProvider';
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { status, user, organizations, logout } = useSession();
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError(null);
+  const primaryOrg = organizations[0] ?? null;
 
-      if (!getAccessToken()) {
-        navigate('/login');
-        return;
-      }
+  const handleGoBackToLogin = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
-      try {
-        const me = await apiGet<AuthUser>('/auth/me');
-        setUser(me);
-
-        try {
-          const orgs = await apiGet<Organization[]>('/organizations');
-          setOrganizations(orgs);
-        } catch (orgErr: unknown) {
-          console.warn('Failed to load organizations', orgErr);
-        }
-      } catch (err: unknown) {
-        if (err instanceof ApiError && err.status === 401) {
-          clearAccessToken();
-          navigate('/login');
-        } else if (err instanceof Error) {
-          setError(err.message || 'Error loading dashboard');
-        } else {
-          setError('Error loading dashboard');
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    load();
-  }, [navigate]);
-
-  function handleLogout() {
-    clearAccessToken();
-    navigate('/login');
-  }
-
-  if (loading) {
+  if (status === 'idle' || status === 'loading') {
     return (
       <div
         style={{
@@ -66,12 +21,12 @@ function DashboardPage() {
           fontFamily: 'var(--fc-font-sans)',
         }}
       >
-        Loading dashboard...
+        Loading your ForgeCloud workspace…
       </div>
     );
   }
 
-  if (error) {
+  if (status === 'error') {
     return (
       <div
         style={{
@@ -79,9 +34,10 @@ function DashboardPage() {
           fontFamily: 'var(--fc-font-sans)',
         }}
       >
-        <p style={{ color: 'var(--fc-danger)' }}>{error}</p>
+        <p style={{ color: 'var(--fc-danger)' }}>Could not load your ForgeCloud session.</p>
         <button
-          onClick={handleLogout}
+          type="button"
+          onClick={handleGoBackToLogin}
           style={{
             marginTop: '0.75rem',
             padding: '0.45rem 0.9rem',
@@ -89,6 +45,7 @@ function DashboardPage() {
             border: '1px solid var(--fc-border-strong)',
             backgroundColor: 'var(--fc-surface)',
             cursor: 'pointer',
+            fontSize: '0.85rem',
           }}
         >
           Back to login
@@ -98,24 +55,25 @@ function DashboardPage() {
   }
 
   if (!user) {
+    // Should not happen if status === 'authenticated',
+    // but keep a guard to avoid weird crashes.
     return null;
   }
 
   return (
     <div
       style={{
-        minHeight: '100vh',
-        padding: '1.75rem 1.5rem 2rem',
-        fontFamily: 'var(--fc-font-sans)',
         maxWidth: '1120px',
         margin: '0 auto',
+        padding: '1.75rem 1.5rem 2rem',
+        fontFamily: 'var(--fc-font-sans)',
       }}
     >
       <header
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'baseline',
           marginBottom: '1.75rem',
         }}
       >
@@ -135,33 +93,20 @@ function DashboardPage() {
               fontSize: '0.9rem',
             }}
           >
-            Signed in as <strong>{user.email}</strong>
-            {user.fullName ? ` (${user.fullName})` : ''}
+            Signed in as <strong>{user.fullName ? user.fullName : user.email}</strong>
+            {user.fullName ? ` · ${user.email}` : ''}
           </p>
         </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '0.45rem 0.95rem',
-            borderRadius: '9999px',
-            border: '1px solid var(--fc-border-strong)',
-            backgroundColor: 'var(--fc-surface)',
-            color: 'var(--fc-text-main)',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-          }}
-        >
-          Log out
-        </button>
       </header>
 
       <section
         style={{
           display: 'grid',
-          gridTemplateColumns: '1.1fr 0.9fr',
+          gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
           gap: '1.5rem',
         }}
       >
+        {/* User card */}
         <div
           style={{
             padding: '1.2rem 1.3rem',
@@ -178,22 +123,34 @@ function DashboardPage() {
               color: 'var(--fc-text-main)',
             }}
           >
-            User info
+            User
           </h2>
-          <pre
+          <dl
             style={{
-              backgroundColor: 'var(--fc-surface-soft)',
-              borderRadius: '0.75rem',
-              padding: '0.8rem',
-              fontSize: '0.8rem',
-              overflowX: 'auto',
-              border: '1px solid var(--fc-border-subtle)',
+              display: 'grid',
+              gridTemplateColumns: 'auto 1fr',
+              rowGap: '0.45rem',
+              columnGap: '0.75rem',
+              fontSize: '0.9rem',
             }}
           >
-            {JSON.stringify(user, null, 2)}
-          </pre>
+            <dt style={{ color: 'var(--fc-text-subtle)' }}>Name</dt>
+            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>
+              {user.fullName || 'Not set'}
+            </dd>
+
+            <dt style={{ color: 'var(--fc-text-subtle)' }}>Email</dt>
+            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>{user.email}</dd>
+
+            <dt style={{ color: 'var(--fc-text-subtle)' }}>Auth provider</dt>
+            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>Local</dd>
+
+            <dt style={{ color: 'var(--fc-text-subtle)' }}>Status</dt>
+            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>Active</dd>
+          </dl>
         </div>
 
+        {/* Workspace card */}
         <div
           style={{
             padding: '1.2rem 1.3rem',
@@ -210,30 +167,41 @@ function DashboardPage() {
               color: 'var(--fc-text-main)',
             }}
           >
-            Organizations (raw)
+            Workspace
           </h2>
-          {organizations.length === 0 ? (
+
+          {primaryOrg ? (
+            <div style={{ fontSize: '0.9rem' }}>
+              <div
+                style={{
+                  fontWeight: 600,
+                  marginBottom: '0.25rem',
+                  color: 'var(--fc-text-main)',
+                }}
+              >
+                {primaryOrg.name}
+              </div>
+              {primaryOrg.slug && (
+                <div
+                  style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--fc-text-subtle)',
+                  }}
+                >
+                  slug: {primaryOrg.slug}
+                </div>
+              )}
+            </div>
+          ) : (
             <p
               style={{
                 fontSize: '0.9rem',
                 color: 'var(--fc-text-subtle)',
               }}
             >
-              No organizations or endpoint not implemented yet.
+              No organizations yet. We’ll wire real workspace data when we build the multi-tenant
+              org/project module.
             </p>
-          ) : (
-            <pre
-              style={{
-                backgroundColor: 'var(--fc-surface-soft)',
-                borderRadius: '0.75rem',
-                padding: '0.8rem',
-                fontSize: '0.8rem',
-                overflowX: 'auto',
-                border: '1px solid var(--fc-border-subtle)',
-              }}
-            >
-              {JSON.stringify(organizations, null, 2)}
-            </pre>
           )}
         </div>
       </section>
