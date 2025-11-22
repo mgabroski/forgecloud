@@ -1,4 +1,4 @@
-# ForgeCloud – Week 1 Summary (Days 1–9)
+# ForgeCloud – Week 1 Summary (Days 1–10)
 
 ## 🚀 Project Overview
 
@@ -161,7 +161,7 @@ The platform is also a personal mastery journey focused on advanced backend arch
 - Implemented `PATCH /auth/active-organization` with membership validation
 - Updated `/auth/me` to return `{ user, organizations, activeOrganizationId }`
 - Added `OrganizationService.getOrganizationsForUser`
-- Unifed error envelopes & no-store caching
+- Unified error envelopes & no-store caching
 
 ### Frontend Enhancements
 
@@ -173,6 +173,7 @@ The platform is also a personal mastery journey focused on advanced backend arch
 ### Testing
 
 - Clean separation of unit tests vs integration tests
+
 - Added full coverage for workspace switching logic:
   - Successful switch
   - Clearing active workspace
@@ -181,6 +182,32 @@ The platform is also a personal mastery journey focused on advanced backend arch
 - All tests passing: **26/26**
 
 **Learned:** true multi-tenant workspace architecture, session synchronisation, FE/BE contract evolution, advanced test discipline.
+
+---
+
+## **Day 10 – Workspace Surface & My Organization Page**
+
+### Frontend
+
+- Added **`WorkspacePage`** showing:
+  - Active workspace details (name, slug, plan, role)
+  - All organizations user belongs to
+
+- Added **protected `/workspace` route**
+- Updated `AppHeader` with **“Manage workspace”** link
+
+### Backend
+
+- Verified `GET /organizations/my` endpoint and membership role structure
+- No changes needed; endpoint aligned perfectly
+
+### Testing
+
+- Added integration test for unauthenticated access (401)
+- Validated membership roles (`OWNER`, `ADMIN`, etc.)
+- Ensured clean payload structure in `/organizations/my`
+
+**Learned:** how to expose clean workspace UX, connect FE/BE session logic, and test multi-tenant membership endpoints.
 
 ---
 
@@ -220,20 +247,3 @@ You have fully aligned on vision, mission, modules, and learning goals.
 - Report normalization
 
 ---
-
-# 💎 Notes
-
-The first 9 days show exceptional consistency, speed, and senior-level structure. The project foundation is stronger than many real SaaS platforms. You built:
-
-- A production-grade monorepo
-- A typed FE/BE system
-- Auth + session + organizations + workspace switching
-- Test infrastructure
-- A global app shell + session layer
-- A working profile & workspace experience
-
-You’re fully aligned with the long-term plan and the educational vision.
-
----
-
-# End of Week 1 + Day 8 + Day 9 Summary

@@ -9,6 +9,13 @@ import { Organization } from '../../modules/organizations/organization.entity';
 
 const app = createApp();
 
+type UserOrganizationSummary = {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
+};
+
 describe('Organizations API (integration)', () => {
   let accessToken: string;
 
@@ -71,22 +78,31 @@ describe('Organizations API (integration)', () => {
     expect(hasAcme).toBe(true);
   });
 
-  it('GET /organizations/my should return only organizations where the user has membership', async () => {
+  it('GET /organizations/my should return 401 when unauthenticated', async () => {
+    await request(app).get('/organizations/my').expect(401);
+  });
+
+  it('GET /organizations/my should return only organizations where the user has membership, including role', async () => {
     const res = await request(app)
       .get('/organizations/my')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
     expect(res.body).toHaveProperty('data');
-    const payload = res.body.data as { organizations: Organization[] };
+    const payload = res.body.data as { organizations: UserOrganizationSummary[] };
 
     expect(Array.isArray(payload.organizations)).toBe(true);
     expect(payload.organizations.length).toBeGreaterThanOrEqual(1);
 
     // At least one org should be an acme-* org we created above
-    const hasAcmeMembership = payload.organizations.some(
+    const acmeOrg = payload.organizations.find(
       (org) => typeof org.slug === 'string' && org.slug.startsWith('acme-'),
     );
-    expect(hasAcmeMembership).toBe(true);
+    expect(acmeOrg).toBeDefined();
+
+    // Ensure role is present and that owner membership is correctly exposed
+    expect(acmeOrg?.role).toBeDefined();
+    expect(typeof acmeOrg?.role).toBe('string');
+    expect(acmeOrg?.role).toBe('OWNER');
   });
 });

@@ -1,3 +1,4 @@
+// frontend/src/app/layout/AppHeader.tsx
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@features/session/SessionProvider';
 
@@ -29,6 +30,10 @@ export function AppHeader() {
 
   const handleOpenProfile = () => {
     navigate('/profile');
+  };
+
+  const handleOpenWorkspace = () => {
+    navigate('/workspace');
   };
 
   return (
@@ -95,7 +100,7 @@ export function AppHeader() {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.15rem',
+            gap: '0.25rem',
           }}
         >
           <span
@@ -109,26 +114,47 @@ export function AppHeader() {
             Workspace
           </span>
           {organizations.length > 0 ? (
-            <select
-              value={activeOrg?.id ?? ''}
-              onChange={(e) => setActiveOrgId(e.target.value || null)}
-              style={{
-                minWidth: '11rem',
-                padding: '0.3rem 0.7rem',
-                borderRadius: '9999px',
-                border: '1px solid var(--fc-border-subtle)',
-                backgroundColor: 'var(--fc-surface-soft)',
-                color: 'var(--fc-text-main)',
-                fontSize: '0.8rem',
-                outline: 'none',
-              }}
-            >
-              {organizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
+            <>
+              <select
+                value={activeOrg?.id ?? ''}
+                onChange={(e) => setActiveOrgId(e.target.value || null)}
+                style={{
+                  minWidth: '11rem',
+                  padding: '0.3rem 0.7rem',
+                  borderRadius: '9999px',
+                  border: '1px solid var(--fc-border-subtle)',
+                  backgroundColor: 'var(--fc-surface-soft)',
+                  color: 'var(--fc-text-main)',
+                  fontSize: '0.8rem',
+                  outline: 'none',
+                }}
+              >
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={handleOpenWorkspace}
+                style={{
+                  alignSelf: 'flex-start',
+                  marginTop: '0.05rem',
+                  padding: 0,
+                  border: 'none',
+                  background: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                  color: 'var(--fc-text-muted)',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '0.12em',
+                }}
+              >
+                Manage workspace
+              </button>
+            </>
           ) : (
             <span
               style={{
