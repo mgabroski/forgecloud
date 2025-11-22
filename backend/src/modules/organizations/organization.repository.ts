@@ -49,6 +49,15 @@ export class OrganizationRepository {
   async save(org: Partial<Organization>): Promise<Organization> {
     return this.repo.save(org);
   }
+
+  /**
+   * Delete organization by id.
+   * Returns true if a row was actually deleted.
+   */
+  async deleteById(id: string): Promise<boolean> {
+    const result = await this.repo.delete(id);
+    return (result.affected ?? 0) > 0;
+  }
 }
 
 export const organizationRepository = new OrganizationRepository();

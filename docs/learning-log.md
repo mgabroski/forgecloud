@@ -211,6 +211,58 @@ The platform is also a personal mastery journey focused on advanced backend arch
 
 ---
 
+## **Day 11 – Organization Management & Members API**
+
+### Backend
+
+- Implemented `GET /organizations/:id`:
+  - Returns a single organization only if the current user has an active membership
+- Implemented `GET /organizations/:id/members`:
+  - Returns members of the organization with `id`, `fullName`, `email`, `role`, and `joinedAt`
+  - Access restricted to active members of the organization
+- Implemented `DELETE /organizations/:id`:
+  - Owner-only deletion with proper role guard
+- Added placeholder `POST /organizations/:id/invite`:
+  - Allows OWNER/ADMIN to call, MEMBER is rejected
+  - Currently returns a placeholder response (future invite flow hook)
+- Extended `OrganizationService` with:
+  - `getOrganizationForUser`
+  - `getOrganizationMembersForUser`
+  - `deleteOrganizationAsOwner`
+  - `inviteUserToOrganizationPlaceholder`
+
+### Frontend
+
+- Added **Organization Settings** view (read-only v1) for the active workspace:
+  - General organization card (name, slug, createdAt, plan placeholder)
+  - Members list with role badges (OWNER / ADMIN / MEMBER) and joined date
+- Linked **Workspace → Organization Settings**:
+  - “Organization settings →” link from `WorkspacePage`
+- Polished Workspace UX:
+  - Role badges now shown both in the Active workspace card and All workspaces list
+
+### Testing
+
+- **Unit tests**:
+  - Added `organization.service.test.ts` covering:
+    - `getOrganizationForUser` membership guard
+    - `getOrganizationMembersForUser` membership guard
+    - `deleteOrganizationAsOwner` (non-member, non-owner, success)
+    - `inviteUserToOrganizationPlaceholder` (non-member, MEMBER, OWNER, ADMIN)
+
+- **Integration tests**:
+  - Extended `organization.int.test.ts` to cover:
+    - `GET /organizations/:id` (auth required + member access)
+    - `GET /organizations/:id/members`
+    - `DELETE /organizations/:id` (owner-only delete + membership removal from `/organizations/my`)
+    - `POST /organizations/:id/invite` placeholder behavior
+
+- All backend test suites passing: **42/42**
+
+**Learned:** how to design and enforce multi-tenant, role-based access for organizations; how to align backend org management APIs with a clean frontend admin view; and how to back role guards with both unit and integration tests for confidence.
+
+---
+
 # 🧠 Final Vision – Confirmed Alignment
 
 ForgeCloud will:

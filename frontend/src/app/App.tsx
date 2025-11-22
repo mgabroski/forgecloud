@@ -1,4 +1,3 @@
-// frontend/src/app/App.tsx
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from '@features/auth/pages/LoginPage';
 import DashboardPage from '@features/dashboard/pages/DashboardPage';
@@ -7,6 +6,7 @@ import { getAccessToken } from '@shared/api/client';
 import ProtectedRoute from '@app/ProtectedRoute';
 import { AppShell } from '@app/layout/AppShell';
 import { WorkspacePage } from '@features/workspace/WorkspacePage';
+import { OrganizationSettingsPage } from '@features/workspace/OrganizationSettingsPage';
 
 function App() {
   const isAuthenticated = !!getAccessToken();
@@ -48,6 +48,17 @@ function App() {
           <ProtectedRoute>
             <AppShell>
               <WorkspacePage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/workspace/settings"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <OrganizationSettingsPage />
             </AppShell>
           </ProtectedRoute>
         }

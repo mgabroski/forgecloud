@@ -41,6 +41,40 @@ export class OrganizationMembershipRepository {
       order: { createdAt: 'ASC' },
     });
   }
+
+  /**
+   * Returns ACTIVE membership for a user in a specific organization.
+   * Includes organization + user relations.
+   * Used for access checks and single-org fetch.
+   */
+  async findActiveMembershipForUserInOrg(
+    userId: string,
+    organizationId: string,
+  ): Promise<OrganizationMembership | null> {
+    return this.repo.findOne({
+      where: {
+        userId,
+        organizationId,
+        status: OrganizationMembershipStatus.ACTIVE,
+      },
+      relations: ['organization', 'user'],
+    });
+  }
+
+  /**
+   * Returns all ACTIVE memberships for a specific organization.
+   * Includes user relation so we can build member list (name, email, etc.).
+   */
+  async findActiveMembershipsForOrg(organizationId: string): Promise<OrganizationMembership[]> {
+    return this.repo.find({
+      where: {
+        organizationId,
+        status: OrganizationMembershipStatus.ACTIVE,
+      },
+      relations: ['user'],
+      order: { createdAt: 'ASC' },
+    });
+  }
 }
 
 export const organizationMembershipRepository = new OrganizationMembershipRepository();

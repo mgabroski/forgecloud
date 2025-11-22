@@ -1,5 +1,30 @@
+import { Link } from 'react-router-dom';
 import { useSession } from '@features/session/SessionProvider';
-import type { OrganizationSummary } from '@features/session/types';
+import type { OrganizationSummary, OrganizationRole } from '@features/session/types';
+
+function renderRoleBadge(role: OrganizationRole) {
+  switch (role) {
+    case 'OWNER':
+      return (
+        <span className="inline-flex items-center rounded-full border border-amber-400 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+          Owner
+        </span>
+      );
+    case 'ADMIN':
+      return (
+        <span className="inline-flex items-center rounded-full border border-blue-400 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700">
+          Admin
+        </span>
+      );
+    case 'MEMBER':
+    default:
+      return (
+        <span className="inline-flex items-center rounded-full border border-zinc-300 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-700">
+          Member
+        </span>
+      );
+  }
+}
 
 export function WorkspacePage() {
   const { status, user, organizations, activeOrgId, error } = useSession();
@@ -44,11 +69,22 @@ export function WorkspacePage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <header>
-        <h1 className="text-xl font-semibold text-zinc-900">My workspace</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          View your current workspace and the organizations you belong to.
-        </p>
+      <header className="flex items-center justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-semibold text-zinc-900">My workspace</h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            View your current workspace and the organizations you belong to.
+          </p>
+        </div>
+
+        {orgCount > 0 && (
+          <Link
+            to="/workspace/settings"
+            className="text-xs font-medium text-sky-600 hover:text-sky-500 hover:underline"
+          >
+            Organization settings →
+          </Link>
+        )}
       </header>
 
       {/* No organizations (future-proof) */}
@@ -69,19 +105,18 @@ export function WorkspacePage() {
           {activeOrg ? (
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <p className="text-base font-semibold text-zinc-900">{activeOrg.name}</p>
                   {activeOrg.slug && (
                     <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                       {activeOrg.slug}
                     </span>
                   )}
+                  {renderRoleBadge(activeOrg.role)}
                 </div>
 
                 <p className="mt-0.5 text-xs text-zinc-500">
-                  Your role:{' '}
-                  <span className="font-medium uppercase tracking-wide">{activeOrg.role}</span> ·
-                  signed in as <span className="font-medium">{user.email}</span>
+                  Signed in as <span className="font-medium">{user.email}</span>
                 </p>
               </div>
 
@@ -117,26 +152,25 @@ export function WorkspacePage() {
                   key={org.id}
                   className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm"
                 >
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium text-zinc-900">{org.name}</span>
                       {org.slug && (
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
                           {org.slug}
                         </span>
                       )}
+                      {renderRoleBadge(org.role)}
                     </div>
-                    <p className="mt-0.5 text-xs text-zinc-500">
-                      Role:{' '}
-                      <span className="font-semibold uppercase tracking-wide">{org.role}</span>
-                    </p>
                   </div>
 
-                  {isActive && (
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-                      Current
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {isActive && (
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                        Current
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}

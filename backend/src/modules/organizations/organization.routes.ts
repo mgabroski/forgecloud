@@ -19,6 +19,21 @@ router.get('/my', authMiddleware, (req: AuthRequest, res: Response, next: NextFu
   organizationController.getMyOrganizations(req, res, next),
 );
 
+// GET /organizations/:id → single organization (must be member)
+router.get('/:id', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) =>
+  organizationController.getOrganizationById(req, res, next),
+);
+
+// GET /organizations/:id/members → members of org (must be member)
+router.get('/:id/members', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) =>
+  organizationController.getOrganizationMembers(req, res, next),
+);
+
+// POST /organizations/:id/invite → owner/admin only (placeholder)
+router.post('/:id/invite', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) =>
+  organizationController.inviteToOrganization(req, res, next),
+);
+
 // Protected create/update
 router.post(
   '/',
@@ -34,6 +49,11 @@ router.patch(
   validateDto(UpdateOrganizationDto),
   (req: AuthRequest, res: Response, next: NextFunction) =>
     organizationController.updateOrganization(req, res, next),
+);
+
+// DELETE /organizations/:id → owner-only
+router.delete('/:id', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) =>
+  organizationController.deleteOrganization(req, res, next),
 );
 
 export { router as organizationRouter };
