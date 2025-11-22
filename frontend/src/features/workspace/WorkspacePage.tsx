@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
 import { useSession } from '@features/session/SessionProvider';
+import type { OrganizationSummary } from '@features/session/types';
 
 export function WorkspacePage() {
   const { status, user, organizations, activeOrgId, error } = useSession();
@@ -36,10 +36,10 @@ export function WorkspacePage() {
 
   const orgCount = organizations.length;
 
-  const activeOrg = useMemo(
-    () => organizations.find((org) => org.id === activeOrgId) ?? organizations[0] ?? null,
-    [organizations, activeOrgId],
-  );
+  const activeOrg: OrganizationSummary | null =
+    orgCount === 0
+      ? null
+      : (organizations.find((org) => org.id === activeOrgId) ?? organizations[0]);
 
   return (
     <div className="p-6 space-y-6">
@@ -71,24 +71,17 @@ export function WorkspacePage() {
               <div>
                 <div className="flex items-center gap-2">
                   <p className="text-base font-semibold text-zinc-900">{activeOrg.name}</p>
-                  {(activeOrg as any).slug && (
+                  {activeOrg.slug && (
                     <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-                      {(activeOrg as any).slug}
+                      {activeOrg.slug}
                     </span>
                   )}
                 </div>
 
-                <p className="mt-1 text-sm text-zinc-500">
-                  Plan:{' '}
-                  <span className="font-medium">{(activeOrg as any).plan ?? 'Unspecified'}</span>
-                </p>
-
                 <p className="mt-0.5 text-xs text-zinc-500">
                   Your role:{' '}
-                  <span className="font-medium uppercase tracking-wide">
-                    {(activeOrg as any).role ?? 'MEMBER'}
-                  </span>{' '}
-                  · signed in as <span className="font-medium">{user.email}</span>
+                  <span className="font-medium uppercase tracking-wide">{activeOrg.role}</span> ·
+                  signed in as <span className="font-medium">{user.email}</span>
                 </p>
               </div>
 
@@ -118,7 +111,6 @@ export function WorkspacePage() {
           <div className="space-y-2">
             {organizations.map((org) => {
               const isActive = org.id === activeOrgId;
-              const role = (org as any).role ?? 'MEMBER';
 
               return (
                 <div
@@ -128,14 +120,15 @@ export function WorkspacePage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-zinc-900">{org.name}</span>
-                      {(org as any).slug && (
+                      {org.slug && (
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
-                          {(org as any).slug}
+                          {org.slug}
                         </span>
                       )}
                     </div>
                     <p className="mt-0.5 text-xs text-zinc-500">
-                      Role: <span className="font-semibold uppercase tracking-wide">{role}</span>
+                      Role:{' '}
+                      <span className="font-semibold uppercase tracking-wide">{org.role}</span>
                     </p>
                   </div>
 
