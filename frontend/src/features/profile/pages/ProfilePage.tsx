@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { apiPatch, ApiError } from '@shared/api/client';
 import { useSession } from '@features/session/SessionProvider';
 import type { AuthUser, OrganizationSummary } from '@features/session/types';
+import { WorkspaceSection } from '@features/session/WorkspaceSection';
 
 interface SessionPayload {
   user: AuthUser;
@@ -270,6 +271,9 @@ function ProfilePage() {
           </span>
         </div>
       </form>
+
+      {/* Read-only workspace / organizations section */}
+      <WorkspaceSection />
     </div>
   );
 }

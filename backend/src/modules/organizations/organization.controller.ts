@@ -12,6 +12,19 @@ class OrganizationController {
     sendSuccess(res, organizations);
   }
 
+  async getMyOrganizations(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        return next(new AuthError('Unauthorized', 'UNAUTHORIZED'));
+      }
+
+      const organizations = await organizationService.getOrganizationsForUser(req.user.id);
+      sendSuccess(res, { organizations });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async createOrganization(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user) {

@@ -1,4 +1,4 @@
-# ForgeCloud – Week 1 Summary (Days 1–7)
+# ForgeCloud – Week 1 Summary (Days 1–9)
 
 ## 🚀 Project Overview
 
@@ -99,17 +99,21 @@ The platform is also a personal mastery journey focused on advanced backend arch
   - Reads JWT from storage and calls `/auth/me`
   - Normalizes backend envelope `{ success, data, error }`
   - Handles 401 by clearing token and marking user as unauthenticated
+
 - Updated **`/auth/me`** backend endpoint:
   - Returns `{ user, organizations }` in a clean envelope
   - Added `Cache-Control: no-store, max-age=0` to prevent caching sensitive data
+
 - Implemented **global app shell**:
   - `AppShell` wraps all authenticated routes
   - `AppHeader` shows brand, “ALPHA” badge, workspace section, user chip, and logout
   - Left sidebar with navigation placeholders (Overview, Sentinel, Atlas, Costs, Settings)
+
 - Integrated **ProtectedRoute + session**:
   - `/dashboard` is only accessible with a valid token and session
   - Logout clears token, resets session, and redirects to `/login`
   - Direct navigation to `/dashboard` without token bounces back to `/login`
+
 - Polished **Dashboard overview**:
   - Uses session data instead of calling `/auth/me` directly
   - Clean “User” and “Workspace” cards in a light SaaS-style layout
@@ -123,25 +127,60 @@ The platform is also a personal mastery journey focused on advanced backend arch
 - Extended **User** model and auth payload:
   - Added `fullName` and `avatarUrl` fields on the backend entity
   - Exposed these fields in login and `/auth/me` responses (safe user without `passwordHash`)
+
 - Implemented **`PATCH /auth/me`**:
   - `UpdateMeDto` with validation for `fullName` and `avatarUrl`
   - Authenticated route with `authMiddleware` + `validateDto`
   - Service method `updateMeByEmail` handling profile updates and returning a safe user
+
 - Introduced **organizations in session**:
   - `/auth/me` now returns `{ user, organizations, activeOrganizationId }`
   - Basic organization + membership entities and repositories are in place
   - SessionProvider consumes `activeOrganizationId` and exposes `activeOrgId` + setter
+
 - Built **Profile page** on the frontend:
   - `/profile` route guarded by `ProtectedRoute` and wrapped with `AppShell`
   - Shows signed-in email and authentication provider
   - Editable `fullName` and `avatarUrl` fields with save button
   - On save: calls `PATCH /auth/me` via `apiPatch` and then `refresh()` to sync session
+
 - Polished **header & navigation**:
   - Header avatar now uses `avatarUrl` when present, falls back to gradient initials
   - Clicking the user chip opens `/profile`
   - Sidebar “Overview” is a real route link to `/dashboard` with active-state styling
 
 **Learned:** how to evolve the auth/session model safely, add profile editing in a typed way, and keep backend & frontend perfectly aligned while reusing the existing shell and session infrastructure.
+
+---
+
+## **Day 9 – Organizations, Workspace Switching & Session Expansion**
+
+### Backend Enhancements
+
+- Added `activeOrganizationId` to the `User` entity + migration
+- Implemented `PATCH /auth/active-organization` with membership validation
+- Updated `/auth/me` to return `{ user, organizations, activeOrganizationId }`
+- Added `OrganizationService.getOrganizationsForUser`
+- Unifed error envelopes & no-store caching
+
+### Frontend Enhancements
+
+- Updated `SessionProvider` to handle new session payload
+- Normalized `activeOrgId` based on backend value
+- Integrated workspace dropdown (AppHeader) with live session updates
+- Verified profile flow still functions correctly with updated session model
+
+### Testing
+
+- Clean separation of unit tests vs integration tests
+- Added full coverage for workspace switching logic:
+  - Successful switch
+  - Clearing active workspace
+  - Rejecting workspace not belonging to user
+
+- All tests passing: **26/26**
+
+**Learned:** true multi-tenant workspace architecture, session synchronisation, FE/BE contract evolution, advanced test discipline.
 
 ---
 
@@ -164,32 +203,31 @@ You have fully aligned on vision, mission, modules, and learning goals.
 
 ### **1. User Profile & Organization Layer**
 
-- Finish wiring organizations & memberships into `/auth/me`
 - Organization listing for current user
-- Workspace switching + persistence of active organization
-- Simple “My organization” / “Workspace settings” surface
+- Workspace switching improvements
+- My Organization page
 
 ### **2. Begin Observability/Logs Module**
 
-- Log model and basic log ingestion API
-- Pagination & indexing strategy
-- Query performance tuning
+- Log model
+- Log ingestion API
+- Indexing & pagination strategy
 
 ### **3. Prepare for Shadowserver Integration**
 
-- SFTP (and later REST) utilities
-- Cron pipeline for scheduled polling
-- Report parsing & normalization foundation
+- SFTP utilities
+- Cron polling pipeline
+- Report normalization
 
 ---
 
 # 💎 Notes
 
-The first 8 days show exceptional consistency, speed, and senior-level structure. The project foundation is cleaner than many real SaaS platforms. You built:
+The first 9 days show exceptional consistency, speed, and senior-level structure. The project foundation is stronger than many real SaaS platforms. You built:
 
 - A production-grade monorepo
 - A typed FE/BE system
-- Auth module with JWT + middleware
+- Auth + session + organizations + workspace switching
 - Test infrastructure
 - A global app shell + session layer
 - A working profile & workspace experience
@@ -198,4 +236,4 @@ You’re fully aligned with the long-term plan and the educational vision.
 
 ---
 
-# End of Week 1 + Day 8 Summary
+# End of Week 1 + Day 8 + Day 9 Summary

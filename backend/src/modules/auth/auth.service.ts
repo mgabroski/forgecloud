@@ -7,6 +7,10 @@ import { LoginDto } from './dto/login-dto';
 import { env } from '../../config/env';
 import { AuthError } from '../../common/errors/auth-error';
 import { UpdateMeDto } from './dto/update-me-dto';
+import {
+  organizationService,
+  type UserOrganizationSummary,
+} from '../organizations/organization.service';
 
 const rawJwtSecret = env.JWT_SECRET;
 
@@ -15,6 +19,12 @@ if (!rawJwtSecret) {
 }
 
 const JWT_SECRET: string = rawJwtSecret;
+
+export interface SessionPayload {
+  user: Omit<User, 'passwordHash'>;
+  organizations: UserOrganizationSummary[];
+  activeOrganizationId: string | null;
+}
 
 export class AuthService {
   private async validateUser(dto: LoginDto): Promise<User> {
@@ -53,28 +63,38 @@ export class AuthService {
     };
   }
 
+  private async buildSession(user: User): Promise<SessionPayload> {
+    const organizations = await organizationService.getOrganizationsForUser(user.id);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _passwordHash, ...safeUser } = user;
+
+    return {
+      user: safeUser as Omit<User, 'passwordHash'>,
+      organizations,
+      activeOrganizationId: user.activeOrganizationId ?? null,
+    };
+  }
+
   /**
-   * Returns the currently authenticated user (sanitized, without passwordHash),
-   * looked up by email.
+   * Returns the full session (user + orgs + activeOrganizationId)
+   * for the currently authenticated user, looked up by email.
    */
-  async getMeByEmail(email: string): Promise<Omit<User, 'passwordHash'>> {
+  async getSessionByEmail(email: string): Promise<SessionPayload> {
     const user = await userRepository.findByEmail(email);
 
     if (!user) {
       throw new AuthError('User not found', 'USER_NOT_FOUND');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash: _passwordHash, ...safeUser } = user;
-
-    return safeUser as Omit<User, 'passwordHash'>;
+    return this.buildSession(user);
   }
 
   /**
    * Updates the profile of the currently authenticated user (fullName, avatarUrl, etc.),
-   * looked up by email.
+   * looked up by email, and returns an updated session payload.
    */
-  async updateMeByEmail(email: string, dto: UpdateMeDto): Promise<Omit<User, 'passwordHash'>> {
+  async updateMeByEmail(email: string, dto: UpdateMeDto): Promise<SessionPayload> {
     const user = await userRepository.findByEmail(email);
 
     if (!user) {
@@ -91,10 +111,40 @@ export class AuthService {
 
     const saved = await userRepository.save(user);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash: _passwordHash, ...safeUser } = saved;
+    return this.buildSession(saved);
+  }
 
-    return safeUser as Omit<User, 'passwordHash'>;
+  /**
+   * Updates the active organization (workspace) for the current user.
+   * Validates that the user is a member of the organization if not null.
+   */
+  async updateActiveOrganizationByEmail(
+    email: string,
+    organizationId: string | null,
+  ): Promise<SessionPayload> {
+    const user = await userRepository.findByEmail(email);
+
+    if (!user) {
+      throw new AuthError('User not found', 'USER_NOT_FOUND');
+    }
+
+    if (organizationId !== null) {
+      const userOrgs = await organizationService.getOrganizationsForUser(user.id);
+      const hasMembership = userOrgs.some((org) => org.id === organizationId);
+
+      if (!hasMembership) {
+        throw new AuthError('Forbidden: not a member of this organization', 'FORBIDDEN');
+      }
+
+      user.activeOrganizationId = organizationId;
+    } else {
+      // Clear active org
+      user.activeOrganizationId = null;
+    }
+
+    const saved = await userRepository.save(user);
+
+    return this.buildSession(saved);
   }
 }
 

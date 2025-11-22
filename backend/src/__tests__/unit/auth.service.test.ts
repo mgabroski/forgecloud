@@ -11,11 +11,22 @@ import { AuthService } from '../../modules/auth/auth.service';
 import { userRepository } from '../../modules/users/user.repository';
 import { AuthProvider, User } from '../../modules/users/user.entity';
 import { AuthError } from '../../common/errors/auth-error';
+import { organizationService } from '../../modules/organizations/organization.service';
+import { OrganizationRole } from '../../modules/organizations/organization-membership.entity';
 
 jest.mock('../../modules/users/user.repository', () => {
   return {
     userRepository: {
       findByEmail: jest.fn(),
+      save: jest.fn(),
+    },
+  };
+});
+
+jest.mock('../../modules/organizations/organization.service', () => {
+  return {
+    organizationService: {
+      getOrganizationsForUser: jest.fn(),
     },
   };
 });
@@ -24,6 +35,7 @@ jest.mock('argon2');
 jest.mock('jsonwebtoken');
 
 const mockedUserRepository = userRepository as jest.Mocked<typeof userRepository>;
+const mockedOrgService = organizationService as jest.Mocked<typeof organizationService>;
 const mockedArgon2 = argon2 as unknown as {
   verify: jest.Mock;
 };
@@ -31,7 +43,7 @@ const mockedJwt = jwt as unknown as {
   sign: jest.Mock;
 };
 
-describe('AuthService.login', () => {
+describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(() => {
@@ -50,86 +62,147 @@ describe('AuthService.login', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     lastLoginAt: null,
-    organizationMemberships: [],
+    // relations are not used in these tests
+    memberships: [],
+    organizationsOwned: [],
+    projectsCreated: [],
+    projectsLastUpdated: [],
+    activeOrganizationId: null,
   } as any;
 
-  it('should return accessToken and user on valid credentials', async () => {
-    mockedUserRepository.findByEmail.mockResolvedValue(baseUser);
-    mockedArgon2.verify.mockResolvedValue(true);
-    mockedJwt.sign.mockReturnValue('fake-jwt-token');
+  describe('login', () => {
+    it('should return accessToken and user on valid credentials', async () => {
+      mockedUserRepository.findByEmail.mockResolvedValue(baseUser);
+      mockedArgon2.verify.mockResolvedValue(true);
+      mockedJwt.sign.mockReturnValue('fake-jwt-token');
 
-    const result = await service.login({
-      email: 'test@example.com',
-      password: 'secret123',
+      const result = await service.login({
+        email: 'test@example.com',
+        password: 'secret123',
+      });
+
+      expect(mockedUserRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockedArgon2.verify).toHaveBeenCalledWith('hashed-password', 'secret123');
+      expect(mockedJwt.sign).toHaveBeenCalledWith(
+        { sub: baseUser.id, email: baseUser.email },
+        expect.any(String),
+        { expiresIn: '1h' },
+      );
+
+      expect(result.accessToken).toBe('fake-jwt-token');
+      expect(result.user.email).toBe('test@example.com');
+      // passwordHash must be stripped out
+      // @ts-expect-error we want to ensure this field is removed
+      expect(result.user.passwordHash).toBeUndefined();
     });
 
-    expect(mockedUserRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
-    expect(mockedArgon2.verify).toHaveBeenCalledWith('hashed-password', 'secret123');
-    expect(mockedJwt.sign).toHaveBeenCalledWith(
-      { sub: baseUser.id, email: baseUser.email },
-      expect.any(String),
-      { expiresIn: '1h' },
-    );
+    it('should throw AuthError when user does not exist', async () => {
+      mockedUserRepository.findByEmail.mockResolvedValue(null as any);
 
-    expect(result.accessToken).toBe('fake-jwt-token');
-    expect(result.user.email).toBe('test@example.com');
-    // passwordHash must be stripped out
-    // @ts-expect-error we want to ensure this field is removed
-    expect(result.user.passwordHash).toBeUndefined();
+      await expect(
+        service.login({
+          email: 'missing@example.com',
+          password: 'secret123',
+        }),
+      ).rejects.toBeInstanceOf(AuthError);
+    });
+
+    it('should throw AuthError when auth provider is not LOCAL', async () => {
+      const googleUser = {
+        ...baseUser,
+        authProvider: AuthProvider.GOOGLE,
+      };
+
+      mockedUserRepository.findByEmail.mockResolvedValue(googleUser as User);
+
+      await expect(
+        service.login({
+          email: 'test@example.com',
+          password: 'secret123',
+        }),
+      ).rejects.toBeInstanceOf(AuthError);
+    });
+
+    it('should throw AuthError when passwordHash is missing', async () => {
+      const userWithoutHash = {
+        ...baseUser,
+        passwordHash: null,
+      };
+
+      mockedUserRepository.findByEmail.mockResolvedValue(userWithoutHash as User);
+
+      await expect(
+        service.login({
+          email: 'test@example.com',
+          password: 'secret123',
+        }),
+      ).rejects.toBeInstanceOf(AuthError);
+    });
+
+    it('should throw AuthError when password is invalid', async () => {
+      mockedUserRepository.findByEmail.mockResolvedValue(baseUser);
+      mockedArgon2.verify.mockResolvedValue(false);
+
+      await expect(
+        service.login({
+          email: 'test@example.com',
+          password: 'wrong-password',
+        }),
+      ).rejects.toBeInstanceOf(AuthError);
+    });
   });
 
-  it('should throw AuthError when user does not exist', async () => {
-    mockedUserRepository.findByEmail.mockResolvedValue(null as any);
+  describe('updateActiveOrganizationByEmail', () => {
+    it('should set activeOrganizationId when organizationId is provided and user is a member', async () => {
+      const userWithNoActiveOrg: User = { ...baseUser, activeOrganizationId: null } as any;
 
-    await expect(
-      service.login({
-        email: 'missing@example.com',
-        password: 'secret123',
-      }),
-    ).rejects.toBeInstanceOf(AuthError);
-  });
+      mockedUserRepository.findByEmail.mockResolvedValue(userWithNoActiveOrg);
+      mockedOrgService.getOrganizationsForUser.mockResolvedValue([
+        {
+          id: 'org-1',
+          name: 'Org One',
+          slug: 'org-one',
+          role: OrganizationRole.MEMBER,
+        },
+      ]);
+      mockedUserRepository.save.mockImplementation((u: User) => Promise.resolve(u));
 
-  it('should throw AuthError when auth provider is not LOCAL', async () => {
-    const googleUser = {
-      ...baseUser,
-      authProvider: AuthProvider.GOOGLE,
-    };
+      const session = await service.updateActiveOrganizationByEmail('test@example.com', 'org-1');
 
-    mockedUserRepository.findByEmail.mockResolvedValue(googleUser as User);
+      expect(mockedUserRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockedOrgService.getOrganizationsForUser).toHaveBeenCalledWith(baseUser.id);
+      expect(mockedUserRepository.save).toHaveBeenCalled();
 
-    await expect(
-      service.login({
-        email: 'test@example.com',
-        password: 'secret123',
-      }),
-    ).rejects.toBeInstanceOf(AuthError);
-  });
+      const savedUser: User = mockedUserRepository.save.mock.calls[0][0];
+      expect(savedUser.activeOrganizationId).toBe('org-1');
+      expect(session.activeOrganizationId).toBe('org-1');
+    });
 
-  it('should throw AuthError when passwordHash is missing', async () => {
-    const userWithoutHash = {
-      ...baseUser,
-      passwordHash: null,
-    };
+    it('should clear activeOrganizationId when organizationId is null', async () => {
+      const userWithActiveOrg: User = { ...baseUser, activeOrganizationId: 'org-previous' } as any;
 
-    mockedUserRepository.findByEmail.mockResolvedValue(userWithoutHash as User);
+      mockedUserRepository.findByEmail.mockResolvedValue(userWithActiveOrg);
+      mockedOrgService.getOrganizationsForUser.mockResolvedValue([
+        {
+          id: 'org-previous',
+          name: 'Org Previous',
+          slug: 'org-prev',
+          role: OrganizationRole.MEMBER,
+        },
+      ]);
+      mockedUserRepository.save.mockImplementation((u: User) => Promise.resolve(u));
 
-    await expect(
-      service.login({
-        email: 'test@example.com',
-        password: 'secret123',
-      }),
-    ).rejects.toBeInstanceOf(AuthError);
-  });
+      const session = await service.updateActiveOrganizationByEmail('test@example.com', null);
 
-  it('should throw AuthError when password is invalid', async () => {
-    mockedUserRepository.findByEmail.mockResolvedValue(baseUser);
-    mockedArgon2.verify.mockResolvedValue(false);
+      expect(mockedUserRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      // Implementation currently calls getOrganizationsForUser even when clearing,
+      // so we assert the actual behavior instead of forbidding it.
+      expect(mockedOrgService.getOrganizationsForUser).toHaveBeenCalledWith(baseUser.id);
+      expect(mockedUserRepository.save).toHaveBeenCalled();
 
-    await expect(
-      service.login({
-        email: 'test@example.com',
-        password: 'wrong-password',
-      }),
-    ).rejects.toBeInstanceOf(AuthError);
+      const savedUser: User = mockedUserRepository.save.mock.calls[0][0];
+      expect(savedUser.activeOrganizationId).toBeNull();
+      expect(session.activeOrganizationId).toBeNull();
+    });
   });
 });

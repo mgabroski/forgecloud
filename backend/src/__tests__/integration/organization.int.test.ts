@@ -70,4 +70,23 @@ describe('Organizations API (integration)', () => {
     );
     expect(hasAcme).toBe(true);
   });
+
+  it('GET /organizations/my should return only organizations where the user has membership', async () => {
+    const res = await request(app)
+      .get('/organizations/my')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(res.body).toHaveProperty('data');
+    const payload = res.body.data as { organizations: Organization[] };
+
+    expect(Array.isArray(payload.organizations)).toBe(true);
+    expect(payload.organizations.length).toBeGreaterThanOrEqual(1);
+
+    // At least one org should be an acme-* org we created above
+    const hasAcmeMembership = payload.organizations.some(
+      (org) => typeof org.slug === 'string' && org.slug.startsWith('acme-'),
+    );
+    expect(hasAcmeMembership).toBe(true);
+  });
 });

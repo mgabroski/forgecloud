@@ -9,9 +9,14 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 
 const router = Router();
 
-// Public list for now (we'll turn this into "my orgs" later)
+// For now keep this as a public/global list (could later be admin-only)
 router.get('/', (req: AuthRequest, res: Response) =>
   organizationController.getOrganizations(req, res),
+);
+
+// GET /organizations/my → organizations for the current user (via memberships)
+router.get('/my', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) =>
+  organizationController.getMyOrganizations(req, res, next),
 );
 
 // Protected create/update

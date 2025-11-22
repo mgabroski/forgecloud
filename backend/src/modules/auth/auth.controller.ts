@@ -6,6 +6,7 @@ import { UpdateMeDto } from './dto/update-me-dto';
 import { sendSuccess } from '../../common/utils/response';
 import { AuthRequest } from '../../common/middleware/auth-middleware';
 import { AuthError } from '../../common/errors/auth-error';
+import { UpdateActiveOrganizationDto } from './dto/update-active-organization-dto';
 
 class AuthController {
   async login(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -24,7 +25,8 @@ class AuthController {
         return next(new AuthError('Unauthorized', 'UNAUTHORIZED'));
       }
 
-      const session = await authService.getMeByEmail(req.user.email);
+      const session = await authService.getSessionByEmail(req.user.email);
+
       sendSuccess(res, session);
     } catch (err) {
       next(err);
@@ -39,6 +41,28 @@ class AuthController {
 
       const dto = req.body as UpdateMeDto;
       const session = await authService.updateMeByEmail(req.user.email, dto);
+
+      sendSuccess(res, session);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateActiveOrganization(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user) {
+        return next(new AuthError('Unauthorized', 'UNAUTHORIZED'));
+      }
+
+      const dto = req.body as UpdateActiveOrganizationDto;
+      const session = await authService.updateActiveOrganizationByEmail(
+        req.user.email,
+        dto.organizationId ?? null,
+      );
 
       sendSuccess(res, session);
     } catch (err) {

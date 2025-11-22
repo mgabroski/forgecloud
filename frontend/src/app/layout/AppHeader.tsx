@@ -1,4 +1,3 @@
-// src/app/layout/AppHeader.tsx
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@features/session/SessionProvider';
 

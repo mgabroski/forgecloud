@@ -5,6 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Organization } from '../organizations/organization.entity';
 import { OrganizationMembership } from '../organizations/organization-membership.entity';
@@ -47,6 +49,17 @@ export class User {
 
   @Column({ name: 'last_login_at', type: 'timestamptz', nullable: true })
   lastLoginAt!: Date | null;
+
+  /**
+   * Currently selected / active workspace for this user.
+   * Nullable: user may not have selected one yet.
+   */
+  @Column({ name: 'active_organization_id', type: 'uuid', nullable: true })
+  activeOrganizationId!: string | null;
+
+  @ManyToOne(() => Organization, { nullable: true })
+  @JoinColumn({ name: 'active_organization_id' })
+  activeOrganization!: Organization | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
