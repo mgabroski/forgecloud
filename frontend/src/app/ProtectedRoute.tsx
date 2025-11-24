@@ -18,8 +18,10 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (status === 'idle' || status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-sm text-slate-400">
-        Loading workspace…
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+          Loading workspace…
+        </div>
       </div>
     );
   }
@@ -30,19 +32,21 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (status === 'error') {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 text-center text-sm text-slate-300">
-        <div className="mb-2 text-lg font-semibold text-slate-50">
-          Could not load your ForgeCloud session
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-center text-sm text-rose-700 shadow-sm">
+          <div className="mb-1 text-base font-semibold text-rose-800">
+            Could not load your ForgeCloud session
+          </div>
+          <div className="mb-4 text-xs text-rose-700/80">
+            {error || 'An unexpected error occurred while loading your session.'}
+          </div>
+          <a
+            href="/login"
+            className="inline-flex items-center rounded-full border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100"
+          >
+            Back to login
+          </a>
         </div>
-        <div className="mb-4 max-w-md text-xs text-slate-400">
-          {error || 'An unexpected error occurred while loading your session.'}
-        </div>
-        <a
-          href="/login"
-          className="rounded border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-800"
-        >
-          Back to login
-        </a>
       </div>
     );
   }

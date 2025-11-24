@@ -12,40 +12,27 @@ function DashboardPage() {
     navigate('/login', { replace: true });
   };
 
+  /* ─────────────────────────────
+      Loading State
+  ───────────────────────────── */
   if (status === 'idle' || status === 'loading') {
     return (
-      <div
-        style={{
-          padding: '1.5rem',
-          fontFamily: 'var(--fc-font-sans)',
-        }}
-      >
-        Loading your ForgeCloud workspace…
-      </div>
+      <div className="p-6 text-sm text-slate-600 font-sans">Loading your ForgeCloud workspace…</div>
     );
   }
 
+  /* ─────────────────────────────
+      Error State
+  ───────────────────────────── */
   if (status === 'error') {
     return (
-      <div
-        style={{
-          padding: '1.5rem',
-          fontFamily: 'var(--fc-font-sans)',
-        }}
-      >
-        <p style={{ color: 'var(--fc-danger)' }}>Could not load your ForgeCloud session.</p>
+      <div className="p-6 font-sans space-y-3">
+        <p className="text-rose-600 font-medium">Could not load your ForgeCloud session.</p>
+
         <button
           type="button"
           onClick={handleGoBackToLogin}
-          style={{
-            marginTop: '0.75rem',
-            padding: '0.45rem 0.9rem',
-            borderRadius: '9999px',
-            border: '1px solid var(--fc-border-strong)',
-            backgroundColor: 'var(--fc-surface)',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-          }}
+          className="inline-flex items-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
         >
           Back to login
         </button>
@@ -53,154 +40,61 @@ function DashboardPage() {
     );
   }
 
-  if (!user) {
-    // Should not happen if status === 'authenticated',
-    // but keep a guard to avoid weird crashes.
-    return null;
-  }
+  if (!user) return null;
 
+  /* ─────────────────────────────
+      Main Dashboard Layout
+  ───────────────────────────── */
   return (
-    <div
-      style={{
-        maxWidth: '1120px',
-        margin: '0 auto',
-        padding: '1.75rem 1.5rem 2rem',
-        fontFamily: 'var(--fc-font-sans)',
-      }}
-    >
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'baseline',
-          marginBottom: '1.75rem',
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: '1.6rem',
-              marginBottom: '0.25rem',
-              color: 'var(--fc-text-main)',
-            }}
-          >
-            ForgeCloud overview
-          </h1>
-          <p
-            style={{
-              color: 'var(--fc-text-subtle)',
-              fontSize: '0.9rem',
-            }}
-          >
-            Signed in as <strong>{user.fullName ? user.fullName : user.email}</strong>
-            {user.fullName ? ` · ${user.email}` : ''}
-          </p>
-        </div>
+    <div className="max-w-5xl mx-auto px-6 py-8 font-sans">
+      {/* Header */}
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold text-slate-900">ForgeCloud overview</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Signed in as <strong>{user.fullName ? user.fullName : user.email}</strong>
+          {user.fullName ? ` · ${user.email}` : ''}
+        </p>
       </header>
 
-      <section
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
-          gap: '1.5rem',
-        }}
-      >
-        {/* User card */}
-        <div
-          style={{
-            padding: '1.2rem 1.3rem',
-            borderRadius: 'var(--fc-radius-lg)',
-            backgroundColor: 'var(--fc-surface)',
-            border: '1px solid var(--fc-border-subtle)',
-            boxShadow: 'var(--fc-shadow-soft)',
-          }}
-        >
-          <h2
-            style={{
-              fontSize: '1.05rem',
-              marginBottom: '0.75rem',
-              color: 'var(--fc-text-main)',
-            }}
-          >
-            User
-          </h2>
-          <dl
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'auto 1fr',
-              rowGap: '0.45rem',
-              columnGap: '0.75rem',
-              fontSize: '0.9rem',
-            }}
-          >
-            <dt style={{ color: 'var(--fc-text-subtle)' }}>Name</dt>
-            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>
-              {user.fullName || 'Not set'}
-            </dd>
+      {/* Two-column grid */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* ──────────────────────────
+            USER CARD
+        ────────────────────────── */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-slate-900 mb-3">User</h2>
 
-            <dt style={{ color: 'var(--fc-text-subtle)' }}>Email</dt>
-            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>{user.email}</dd>
+          <dl className="grid grid-cols-[auto,1fr] gap-y-2 gap-x-4 text-sm">
+            <dt className="text-slate-500">Name</dt>
+            <dd className="font-medium text-slate-900">{user.fullName || 'Not set'}</dd>
 
-            <dt style={{ color: 'var(--fc-text-subtle)' }}>Auth provider</dt>
-            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>Local</dd>
+            <dt className="text-slate-500">Email</dt>
+            <dd className="font-medium text-slate-900">{user.email}</dd>
 
-            <dt style={{ color: 'var(--fc-text-subtle)' }}>Status</dt>
-            <dd style={{ margin: 0, color: 'var(--fc-text-main)' }}>Active</dd>
+            <dt className="text-slate-500">Auth provider</dt>
+            <dd className="font-medium text-slate-900">Local</dd>
+
+            <dt className="text-slate-500">Status</dt>
+            <dd className="font-medium text-slate-900">Active</dd>
           </dl>
         </div>
 
-        {/* Workspace card */}
-        <div
-          style={{
-            padding: '1.2rem 1.3rem',
-            borderRadius: 'var(--fc-radius-lg)',
-            backgroundColor: 'var(--fc-surface)',
-            border: '1px solid var(--fc-border-subtle)',
-            boxShadow: 'var(--fc-shadow-soft)',
-          }}
-        >
-          <h2
-            style={{
-              fontSize: '1.05rem',
-              marginBottom: '0.75rem',
-              color: 'var(--fc-text-main)',
-            }}
-          >
-            Workspace
-          </h2>
+        {/* ──────────────────────────
+            WORKSPACE CARD
+        ────────────────────────── */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-slate-900 mb-3">Workspace</h2>
 
           {primaryOrg ? (
-            <div style={{ fontSize: '0.9rem' }}>
-              <div
-                style={{
-                  fontWeight: 600,
-                  marginBottom: '0.25rem',
-                  color: 'var(--fc-text-main)',
-                }}
-              >
-                {primaryOrg.name}
-              </div>
+            <div className="space-y-1 text-sm">
+              <div className="text-slate-900 font-semibold">{primaryOrg.name}</div>
+
               {primaryOrg.slug && (
-                <div
-                  style={{
-                    fontSize: '0.8rem',
-                    color: 'var(--fc-text-subtle)',
-                  }}
-                >
-                  slug: {primaryOrg.slug}
-                </div>
+                <div className="text-slate-500 text-xs">slug: {primaryOrg.slug}</div>
               )}
             </div>
           ) : (
-            <p
-              style={{
-                fontSize: '0.9rem',
-                color: 'var(--fc-text-subtle)',
-              }}
-            >
-              No organizations yet. We’ll wire real workspace data when we build the multi-tenant
-              org/project module.
-            </p>
+            <p className="text-sm text-slate-500">No organizations yet.</p>
           )}
         </div>
       </section>

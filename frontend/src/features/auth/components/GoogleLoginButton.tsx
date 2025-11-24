@@ -11,37 +11,15 @@ export function GoogleLoginButton() {
     <button
       type="button"
       onClick={handleClick}
-      style={{
-        width: '100%',
-        padding: '0.7rem 0.9rem',
-        borderRadius: '9999px',
-        border: '1px solid var(--fc-border-strong)',
-        backgroundColor: '#0f172a',
-        color: '#f9fafb',
-        cursor: 'pointer',
-        fontWeight: 500,
-        fontSize: '0.9rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '0.5rem',
-        boxShadow: '0 10px 24px rgba(15,23,42,0.35)',
-      }}
+      aria-label="Continue with Google"
+      className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-50 shadow-lg transition hover:bg-black"
     >
       {/* Google icon */}
       <span
         aria-hidden="true"
-        style={{
-          width: '18px',
-          height: '18px',
-          borderRadius: '9999px',
-          backgroundColor: '#ffffff',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white"
       >
-        <svg viewBox="0 0 24 24" width="14" height="14" style={{ display: 'block' }}>
+        <svg viewBox="0 0 24 24" width="14" height="14" className="block">
           <path
             fill="#EA4335"
             d="M12 10.2v3.8h5.3c-.2 1.2-.9 2.3-1.9 3.1l3.1 2.4c1.8-1.7 2.8-4.1 2.8-6.9 0-.7-.1-1.4-.2-2H12z"

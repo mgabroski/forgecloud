@@ -8,6 +8,8 @@ import { AppShell } from '@app/layout/AppShell';
 import { WorkspacePage } from '@features/workspace/WorkspacePage';
 import { OrganizationSettingsPage } from '@features/workspace/OrganizationSettingsPage';
 
+import { ForgeCloudUXDemo } from '../dev/ForgeCloudUXDemo';
+
 function App() {
   const isAuthenticated = !!getAccessToken();
 
@@ -19,6 +21,8 @@ function App() {
       />
 
       <Route path="/login" element={<LoginPage />} />
+
+      <Route path="/ux-demo" element={<ForgeCloudUXDemo />} />
 
       <Route
         path="/dashboard"

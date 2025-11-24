@@ -1,8 +1,10 @@
+@import "tailwindcss";
+
 /* ===== Design tokens ===== */
 
 :root {
   /* Colors */
-  --fc-bg: #f3f4f6; /* page background */
+  --fc-bg: #f3f4f6;
   --fc-bg-soft: #e5e7eb;
   --fc-surface: #ffffff;
   --fc-surface-soft: #f9fafb;
@@ -51,13 +53,8 @@ body {
   margin: 0;
   font-family: var(--fc-font-sans);
   -webkit-font-smoothing: antialiased;
-  background:
-    radial-gradient(circle at top, #ffffff 0, #f3f4f6 40%, #e5e7eb 100%);
+  background-color: var(--fc-bg);
   color: var(--fc-text-main);
-}
-
-#root {
-  min-height: 100vh;
 }
 
 /* Basic defaults */
@@ -67,10 +64,7 @@ a {
   text-decoration: none;
 }
 
-button {
-  font-family: inherit;
-}
-
+button,
 input {
   font-family: inherit;
 }

@@ -33,7 +33,7 @@ export function WorkspacePage() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
+      <div className="mx-auto max-w-6xl px-4 py-8">
         <p className="text-sm text-zinc-500">Loading workspace…</p>
       </div>
     );
@@ -41,10 +41,10 @@ export function WorkspacePage() {
 
   if (status === 'error') {
     return (
-      <div className="p-6">
-        <h1 className="text-xl font-semibold text-zinc-900">My workspace</h1>
-        <p className="mt-2 text-sm text-red-500">Failed to load workspace information.</p>
-        {typeof error === 'string' && <p className="mt-1 text-xs text-zinc-500">{error}</p>}
+      <div className="mx-auto max-w-6xl space-y-3 px-4 py-8">
+        <h1 className="text-xl font-semibold text-zinc-900">My workspaces</h1>
+        <p className="text-sm text-red-500">Failed to load workspace information.</p>
+        {typeof error === 'string' && <p className="text-xs text-zinc-500">{error}</p>}
       </div>
     );
   }
@@ -53,7 +53,7 @@ export function WorkspacePage() {
     // Inside AppShell this should normally not happen,
     // but we keep a defensive state.
     return (
-      <div className="p-6">
+      <div className="mx-auto max-w-6xl px-4 py-8">
         <p className="text-sm text-zinc-500">No active session. Please sign in again.</p>
       </div>
     );
@@ -67,13 +67,13 @@ export function WorkspacePage() {
       : (organizations.find((org) => org.id === activeOrgId) ?? organizations[0]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2">
+      <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">My workspace</h1>
+          <h1 className="text-xl font-semibold text-zinc-900">My workspaces</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            View your current workspace and the organizations you belong to.
+            Overview of all organizations where you have access.
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export function WorkspacePage() {
                 </p>
               </div>
 
-              <div className="mt-2 sm:mt-0 text-xs text-zinc-400">
+              <div className="mt-2 text-xs text-zinc-400 sm:mt-0">
                 Switching workspaces is done from the header workspace dropdown.
               </div>
             </div>

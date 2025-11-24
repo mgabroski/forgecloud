@@ -9,121 +9,103 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'radial-gradient(circle at top left, #e5edff 0, #f5f7fb 40%, #f9fafb 100%)',
-        color: 'var(--fc-text-main)',
-        fontFamily: 'var(--fc-font-sans)',
-      }}
-    >
+    <div className="min-h-screen bg-slate-950 text-slate-50">
       <AppHeader />
 
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'stretch',
-          maxWidth: '1280px',
-          margin: '0 auto',
-          width: '100%',
-        }}
-      >
+      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-4 pb-8 pt-4 md:px-6">
         {/* Sidebar */}
-        <aside
-          style={{
-            width: '220px',
-            padding: '1.5rem 1.25rem',
-            borderRight: '1px solid var(--fc-border-subtle)',
-            backgroundColor: 'rgba(255,255,255,0.8)',
-            backdropFilter: 'blur(12px)',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '0.7rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.16em',
-              color: 'var(--fc-text-muted)',
-              marginBottom: '0.8rem',
-            }}
-          >
+        <aside className="hidden w-56 shrink-0 flex-col rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-sm shadow-sm md:flex">
+          <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
             Navigation
           </div>
 
-          <nav
-            style={{
-              display: 'grid',
-              gap: '0.25rem',
-              fontSize: '0.86rem',
-            }}
-          >
-            {/* Overview → Dashboard */}
+          <nav className="space-y-1 text-sm">
             <NavLink
               to="/dashboard"
-              style={({ isActive }) => ({
-                padding: '0.35rem 0.6rem',
-                borderRadius: '0.5rem',
-                backgroundColor: isActive ? 'rgba(37,99,235,0.08)' : 'transparent',
-                color: isActive ? 'var(--fc-text-main)' : 'var(--fc-text-subtle)',
-                fontWeight: isActive ? 500 : 400,
-                textDecoration: 'none',
-              })}
+              className={({ isActive }) =>
+                [
+                  'flex items-center rounded-xl px-3 py-2 transition-colors',
+                  isActive
+                    ? 'bg-slate-800 text-slate-50'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
+                ].join(' ')
+              }
             >
               Overview
             </NavLink>
 
-            {/* Placeholders for future modules */}
-            <div
-              style={{
-                padding: '0.32rem 0.6rem',
-                borderRadius: '0.5rem',
-                color: 'var(--fc-text-subtle)',
-              }}
-            >
-              Sentinel (logs &amp; security)
+            <div className="mt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Modules
             </div>
-            <div
-              style={{
-                padding: '0.32rem 0.6rem',
-                borderRadius: '0.5rem',
-                color: 'var(--fc-text-subtle)',
-              }}
+
+            <button
+              type="button"
+              className="mt-1 flex w-full cursor-not-allowed items-center rounded-xl px-3 py-2 text-left text-slate-500/60 ring-1 ring-slate-800/60"
             >
-              Atlas (SLOs &amp; metrics)
-            </div>
-            <div
-              style={{
-                padding: '0.32rem 0.6rem',
-                borderRadius: '0.5rem',
-                color: 'var(--fc-text-subtle)',
-              }}
+              <span className="text-xs font-medium text-slate-400">
+                Sentinel (logs &amp; security)
+              </span>
+              <span className="ml-auto rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-400">
+                Coming soon
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className="mt-1 flex w-full cursor-not-allowed items-center rounded-xl px-3 py-2 text-left text-slate-500/60 ring-1 ring-slate-800/60"
             >
-              Costs (cloud spend)
-            </div>
-            <div
-              style={{
-                padding: '0.32rem 0.6rem',
-                borderRadius: '0.5rem',
-                color: 'var(--fc-text-subtle)',
-              }}
+              <span className="text-xs font-medium text-slate-400">Atlas (SLOs &amp; metrics)</span>
+              <span className="ml-auto rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-400">
+                Coming soon
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className="mt-1 flex w-full cursor-not-allowed items-center rounded-xl px-3 py-2 text-left text-slate-500/60 ring-1 ring-slate-800/60"
             >
-              Settings
+              <span className="text-xs font-medium text-slate-400">Costs (cloud spend)</span>
+              <span className="ml-auto rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-400">
+                Coming soon
+              </span>
+            </button>
+
+            <div className="mt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Account
             </div>
+
+            <NavLink
+              to="/workspace"
+              className={({ isActive }) =>
+                [
+                  'mt-1 flex items-center rounded-xl px-3 py-2 text-left text-xs transition-colors',
+                  isActive
+                    ? 'bg-slate-800 text-slate-50'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
+                ].join(' ')
+              }
+            >
+              Workspaces
+            </NavLink>
+
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                [
+                  'flex items-center rounded-xl px-3 py-2 text-left text-xs transition-colors',
+                  isActive
+                    ? 'bg-slate-800 text-slate-50'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
+                ].join(' ')
+              }
+            >
+              Profile
+            </NavLink>
           </nav>
         </aside>
 
         {/* Main content */}
-        <main
-          style={{
-            flex: 1,
-            padding: '1.75rem 1.75rem 2.25rem',
-          }}
-        >
-          {children}
-        </main>
+        <main className="flex-1">{children}</main>
       </div>
     </div>
   );

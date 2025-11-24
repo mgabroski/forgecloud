@@ -1,9 +1,10 @@
+// frontend/src/features/profile/pages/ProfilePage.tsx
 import type { FormEvent } from 'react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiPatch, ApiError } from '@shared/api/client';
 import { useSession } from '@features/session/SessionProvider';
 import type { AuthUser, OrganizationSummary } from '@features/session/types';
-import { WorkspaceSection } from '@features/session/WorkspaceSection';
 
 interface SessionPayload {
   user: AuthUser;
@@ -15,6 +16,17 @@ interface UpdateMeEnvelope {
   success: boolean;
   data: SessionPayload | null;
   error: unknown | null;
+}
+
+function getInitials(nameOrEmail: string | undefined): string {
+  if (!nameOrEmail) return 'FC';
+
+  const parts = nameOrEmail.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  return nameOrEmail.slice(0, 2).toUpperCase();
 }
 
 function ProfilePage() {
@@ -30,23 +42,15 @@ function ProfilePage() {
     // Should not happen because this page is behind ProtectedRoute,
     // but we guard anyway.
     return (
-      <div>
-        <h1
-          style={{
-            fontSize: '1.4rem',
-            marginBottom: '0.4rem',
-          }}
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <h1 className="text-xl font-semibold text-slate-900">Profile</h1>
+        <p className="mt-1 text-sm text-slate-600">No user is loaded. Please sign in again.</p>
+        <Link
+          to="/login"
+          className="mt-4 inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
         >
-          Profile
-        </h1>
-        <p
-          style={{
-            fontSize: '0.9rem',
-            color: 'var(--fc-text-subtle)',
-          }}
-        >
-          No user is loaded. Please sign in again.
-        </p>
+          ← Back to login
+        </Link>
       </div>
     );
   }
@@ -85,195 +89,169 @@ function ProfilePage() {
     }
   }
 
-  return (
-    <div
-      style={{
-        maxWidth: '520px',
-        width: '100%',
-      }}
-    >
-      <h1
-        style={{
-          fontSize: '1.4rem',
-          marginBottom: '0.2rem',
-        }}
-      >
-        Profile
-      </h1>
-      <p
-        style={{
-          fontSize: '0.9rem',
-          color: 'var(--fc-text-subtle)',
-          marginBottom: '1.4rem',
-        }}
-      >
-        Manage your basic ForgeCloud profile details. These will show up across your workspaces.
-      </p>
+  const initials = getInitials(user.fullName || user.email);
+  const providerLabel =
+    user.authProvider === 'google'
+      ? 'Google (SSO)'
+      : user.authProvider === 'local' || !user.authProvider
+        ? 'Email & password'
+        : user.authProvider;
 
-      <div
-        style={{
-          marginBottom: '1.5rem',
-          padding: '0.9rem 1rem',
-          borderRadius: '0.85rem',
-          backgroundColor: 'rgba(15,23,42,0.02)',
-          border: '1px solid var(--fc-border-subtle)',
-          fontSize: '0.8rem',
-        }}
-      >
-        <div
-          style={{
-            marginBottom: '0.25rem',
-            color: 'var(--fc-text-main)',
-          }}
-        >
-          Signed in as <strong>{user.email}</strong>
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      {/* Page header */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-slate-900">Profile</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            Manage your personal identity in ForgeCloud. These details will show up across your
+            workspaces.
+          </p>
         </div>
-        <div style={{ color: 'var(--fc-text-muted)' }}>
-          Authentication provider: <code>{user.authProvider ?? 'local'}</code>
+
+        <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs shadow-sm">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Signed in as
+          </span>
+          <span className="max-w-[12rem] truncate text-[11px] font-medium text-slate-900">
+            {user.email}
+          </span>
         </div>
       </div>
 
+      {/* Alerts */}
       {error && (
-        <div
-          style={{
-            marginBottom: '1rem',
-            padding: '0.8rem 0.9rem',
-            borderRadius: '0.75rem',
-            backgroundColor: 'var(--fc-danger-soft)',
-            color: 'var(--fc-danger)',
-            fontSize: '0.85rem',
-            border: '1px solid #fecaca',
-          }}
-        >
+        <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error}
         </div>
       )}
 
       {saved && !error && (
-        <div
-          style={{
-            marginBottom: '1rem',
-            padding: '0.7rem 0.85rem',
-            borderRadius: '0.75rem',
-            backgroundColor: 'rgba(34,197,94,0.08)',
-            color: '#16a34a',
-            fontSize: '0.83rem',
-            border: '1px solid rgba(22,163,74,0.3)',
-          }}
-        >
+        <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           Profile updated successfully.
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
-        <div>
-          <label
-            htmlFor="fullName"
-            style={{
-              display: 'block',
-              marginBottom: '0.3rem',
-              fontSize: '0.85rem',
-              color: 'var(--fc-text-main)',
-            }}
-          >
-            Full name
-          </label>
-          <input
-            id="fullName"
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Your name as it will appear in the app"
-            style={{
-              width: '100%',
-              padding: '0.55rem 0.8rem',
-              borderRadius: '0.6rem',
-              border: '1px solid var(--fc-border-strong)',
-              backgroundColor: 'var(--fc-surface-soft)',
-              color: 'var(--fc-text-main)',
-              fontSize: '0.9rem',
-            }}
-          />
-        </div>
+      {/* Main content */}
+      <div className="grid gap-6 lg:grid-cols-[1.7fr,1.3fr]">
+        {/* Identity card */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-slate-900">Your details</h2>
+          <p className="mt-1 text-xs text-slate-500">Your name, email, and sign-in method.</p>
 
-        <div>
-          <label
-            htmlFor="avatarUrl"
-            style={{
-              display: 'block',
-              marginBottom: '0.3rem',
-              fontSize: '0.85rem',
-              color: 'var(--fc-text-main)',
-            }}
-          >
-            Avatar URL
-          </label>
-          <input
-            id="avatarUrl"
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="Link to your profile image (optional)"
-            style={{
-              width: '100%',
-              padding: '0.55rem 0.8rem',
-              borderRadius: '0.6rem',
-              border: '1px solid var(--fc-border-strong)',
-              backgroundColor: 'var(--fc-surface-soft)',
-              color: 'var(--fc-text-main)',
-              fontSize: '0.9rem',
-            }}
-          />
-          <p
-            style={{
-              marginTop: '0.3rem',
-              fontSize: '0.78rem',
-              color: 'var(--fc-text-muted)',
-            }}
-          >
-            In a later iteration we can render this as your avatar in the header.
-          </p>
-        </div>
+          <div className="mt-4 flex flex-col gap-5 sm:flex-row">
+            {/* Avatar */}
+            <div className="flex flex-col items-center gap-3 sm:items-start">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-sky-500 via-indigo-500 to-violet-500 text-2xl font-semibold text-white shadow-lg ring-2 ring-slate-100">
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.fullName || user.email}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
+              <span className="text-[11px] text-slate-500">
+                Avatar is rendered from the URL below.
+              </span>
+            </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.75rem',
-            alignItems: 'center',
-            marginTop: '0.3rem',
-          }}
-        >
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: '0.55rem 1.3rem',
-              borderRadius: '9999px',
-              border: 'none',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              backgroundColor: loading ? 'rgba(37,99,235,0.6)' : 'var(--fc-primary)',
-              color: '#ffffff',
-              cursor: loading ? 'default' : 'pointer',
-              boxShadow: '0 8px 20px rgba(37,99,235,0.3)',
-            }}
-          >
-            {loading ? 'Saving…' : 'Save changes'}
-          </button>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="flex-1 space-y-4 text-sm">
+              <div>
+                <label htmlFor="fullName" className="block text-xs font-medium text-slate-700">
+                  Full name
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Your name as it will appear in the app"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/30"
+                />
+              </div>
 
-          <span
-            style={{
-              fontSize: '0.78rem',
-              color: 'var(--fc-text-muted)',
-            }}
-          >
-            Changes will apply across all your organizations.
-          </span>
-        </div>
-      </form>
+              <div>
+                <label htmlFor="avatarUrl" className="block text-xs font-medium text-slate-700">
+                  Avatar URL
+                </label>
+                <input
+                  id="avatarUrl"
+                  type="url"
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="https://… (optional)"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/30"
+                />
+                <p className="mt-1 text-[11px] text-slate-500">
+                  If provided, this image will be shown as your avatar in the header.
+                </p>
+              </div>
 
-      {/* Read-only workspace / organizations section */}
-      <WorkspaceSection />
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
+                >
+                  {loading ? 'Saving…' : 'Save changes'}
+                </button>
+                <span className="text-[11px] text-slate-500">
+                  Changes will apply across all your organizations.
+                </span>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        {/* Account metadata / provider */}
+        <section className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-slate-900">Account metadata</h2>
+            <p className="mt-1 text-xs text-slate-500">Technical details about how you sign in.</p>
+
+            <dl className="mt-4 grid gap-3 text-sm text-slate-900">
+              <div>
+                <dt className="text-xs font-medium text-slate-500">Email</dt>
+                <dd className="mt-1 truncate">{user.email}</dd>
+              </div>
+
+              <div>
+                <dt className="text-xs font-medium text-slate-500">Provider</dt>
+                <dd className="mt-1">{providerLabel}</dd>
+              </div>
+
+              {user.id && (
+                <div>
+                  <dt className="text-xs font-medium text-slate-500">User ID</dt>
+                  <dd className="mt-1 break-all text-xs font-mono text-slate-600">{user.id}</dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {/* Workspaces link */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">Workspaces</h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  You can belong to multiple organizations inside ForgeCloud.
+                </p>
+              </div>
+              <Link
+                to="/workspace"
+                className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-50 shadow-sm hover:bg-black"
+              >
+                View my workspaces →
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

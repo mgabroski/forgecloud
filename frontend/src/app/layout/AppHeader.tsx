@@ -10,7 +10,6 @@ function getInitials(nameOrEmail: string | undefined): string {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
-  // Fallback: first 2 chars of email/name
   return nameOrEmail.slice(0, 2).toUpperCase();
 }
 
@@ -37,246 +36,97 @@ export function AppHeader() {
   };
 
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 20,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0.7rem 1.75rem',
-        borderBottom: '1px solid var(--fc-border-subtle)',
-        backgroundColor: 'var(--fc-surface)',
-        backdropFilter: 'blur(16px)',
-        boxShadow: '0 10px 30px rgba(15,23,42,0.06)',
-      }}
-    >
-      {/* Left: brand */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.55rem',
-        }}
-      >
-        <span
-          style={{
-            fontSize: '1.05rem',
-            fontWeight: 700,
-            letterSpacing: '-0.03em',
-            color: 'var(--fc-text-main)',
-          }}
-        >
-          ForgeCloud
-        </span>
-        <span
-          style={{
-            fontSize: '0.65rem',
-            textTransform: 'uppercase',
-            borderRadius: '9999px',
-            padding: '0.15rem 0.55rem',
-            border: '1px solid rgba(59,130,246,0.3)',
-            backgroundColor: 'rgba(59,130,246,0.06)',
-            color: 'rgba(37,99,235,0.9)',
-            letterSpacing: '0.16em',
-          }}
-        >
-          Alpha
-        </span>
-      </div>
-
-      {/* Right: workspace + user */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1.6rem',
-          fontSize: '0.8rem',
-        }}
-      >
-        {/* Workspace selector */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.25rem',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '0.7rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.16em',
-              color: 'var(--fc-text-muted)',
-            }}
-          >
-            Workspace
-          </span>
-          {organizations.length > 0 ? (
-            <>
-              <select
-                value={activeOrg?.id ?? ''}
-                onChange={(e) => setActiveOrgId(e.target.value || null)}
-                style={{
-                  minWidth: '11rem',
-                  padding: '0.3rem 0.7rem',
-                  borderRadius: '9999px',
-                  border: '1px solid var(--fc-border-subtle)',
-                  backgroundColor: 'var(--fc-surface-soft)',
-                  color: 'var(--fc-text-main)',
-                  fontSize: '0.8rem',
-                  outline: 'none',
-                }}
-              >
-                {organizations.map((org) => (
-                  <option key={org.id} value={org.id}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
-
-              <button
-                type="button"
-                onClick={handleOpenWorkspace}
-                style={{
-                  alignSelf: 'flex-start',
-                  marginTop: '0.05rem',
-                  padding: 0,
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.7rem',
-                  color: 'var(--fc-text-muted)',
-                  textDecoration: 'underline',
-                  textUnderlineOffset: '0.12em',
-                }}
-              >
-                Manage workspace
-              </button>
-            </>
-          ) : (
-            <span
-              style={{
-                fontSize: '0.8rem',
-                color: 'var(--fc-text-subtle)',
-              }}
-            >
-              No organizations
+    <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/85 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
+        {/* Left: brand */}
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-slate-100 shadow-sm ring-1 ring-slate-700">
+            FC
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold tracking-tight text-slate-50">ForgeCloud</span>
+            <span className="flex items-center gap-1 text-[11px] text-slate-500">
+              Multi-tenant observability &amp; security
+              <span className="rounded-full border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-sky-300">
+                Alpha
+              </span>
             </span>
-          )}
+          </div>
         </div>
 
-        {/* Divider */}
-        <div
-          style={{
-            width: 1,
-            height: '1.9rem',
-            backgroundColor: 'rgba(148,163,184,0.45)',
-          }}
-        />
+        {/* Right: workspace + user */}
+        <div className="flex items-center gap-6">
+          {/* Workspace selector */}
+          <div className="hidden flex-col gap-1 text-xs text-slate-300 sm:flex">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Workspace
+            </span>
+            {organizations.length > 0 ? (
+              <>
+                <select
+                  value={activeOrg?.id ?? ''}
+                  onChange={(e) => setActiveOrgId(e.target.value || null)}
+                  className="min-w-[11rem] rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-100 shadow-sm outline-none ring-0 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/60"
+                >
+                  {organizations.map((org) => (
+                    <option key={org.id} value={org.id}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
 
-        {/* User chip + logout */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.9rem',
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleOpenProfile}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.55rem',
-              padding: 0,
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: '9999px',
-                background: user?.avatarUrl
-                  ? 'transparent'
-                  : 'linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                boxShadow: user?.avatarUrl
-                  ? '0 8px 20px rgba(15,23,42,0.25)'
-                  : '0 8px 20px rgba(37,99,235,0.35)',
-                overflow: 'hidden',
-              }}
-            >
-              {user?.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={displayName}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '9999px',
-                    display: 'block',
-                  }}
-                />
-              ) : (
-                initials
-              )}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                lineHeight: 1.2,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '0.8rem',
-                  fontWeight: 500,
-                  color: 'var(--fc-text-main)',
-                }}
-              >
-                {displayName}
-              </span>
-              <span
-                style={{
-                  fontSize: '0.75rem',
-                  color: 'var(--fc-text-muted)',
-                }}
-              >
-                {user?.email}
-              </span>
-            </div>
-          </button>
+                <button
+                  type="button"
+                  onClick={handleOpenWorkspace}
+                  className="self-start text-[10px] font-medium text-slate-500 hover:text-sky-400"
+                >
+                  Manage workspaces →
+                </button>
+              </>
+            ) : (
+              <span className="text-xs text-slate-500">No organizations</span>
+            )}
+          </div>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            style={{
-              padding: '0.35rem 0.9rem',
-              borderRadius: '9999px',
-              border: '1px solid var(--fc-border-subtle)',
-              backgroundColor: '#ffffff',
-              color: 'var(--fc-text-main)',
-              fontSize: '0.75rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(15,23,42,0.06)',
-            }}
-          >
-            Log out
-          </button>
+          {/* Divider */}
+          <div className="hidden h-8 w-px bg-slate-800 sm:block" />
+
+          {/* User chip + logout */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleOpenProfile}
+              className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1.5 text-left text-xs text-slate-200 shadow-sm hover:border-sky-500/70 hover:bg-slate-900"
+            >
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-sky-500 via-indigo-500 to-violet-500 text-[11px] font-semibold text-white shadow">
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
+              <div className="hidden flex-col leading-tight sm:flex">
+                <span className="max-w-[11rem] truncate text-[11px] font-medium text-slate-50">
+                  {displayName}
+                </span>
+                <span className="max-w-[11rem] truncate text-[10px] text-slate-500">
+                  {user?.email}
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-medium text-slate-200 shadow-sm hover:border-rose-500/70 hover:bg-rose-500/10 hover:text-rose-100"
+            >
+              Log out
+            </button>
+          </div>
         </div>
       </div>
     </header>
