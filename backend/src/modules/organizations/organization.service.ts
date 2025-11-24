@@ -5,6 +5,7 @@ import { organizationMembershipRepository } from './organization-membership.repo
 import { ValidationError } from '../../common/errors/validation-error';
 import { Organization, OrganizationPlan } from './organization.entity';
 import { OrganizationRole } from './organization-membership.entity';
+import { userRepository } from '../users/user.repository';
 
 export interface UserOrganizationSummary {
   id: string;
@@ -41,6 +42,14 @@ export class OrganizationService {
 
     // Auto-create owner membership
     await organizationMembershipRepository.createForOwner(userId, organization.id);
+
+    // ✅ Hard rule: if user has no active organization yet,
+    // set this new organization as their active workspace.
+    const user = await userRepository.findById(userId);
+    if (user && !user.activeOrganizationId) {
+      user.activeOrganizationId = organization.id;
+      await userRepository.save(user);
+    }
 
     return organization;
   }

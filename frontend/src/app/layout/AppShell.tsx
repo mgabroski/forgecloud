@@ -38,6 +38,21 @@ export function AppShell({ children }: AppShellProps) {
               Modules
             </div>
 
+            {/* ⭐ Projects module link */}
+            <NavLink
+              to="/projects"
+              className={({ isActive }) =>
+                [
+                  'mt-1 flex items-center rounded-xl px-3 py-2 text-left text-xs transition-colors',
+                  isActive
+                    ? 'bg-slate-800 text-slate-50'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
+                ].join(' ')
+              }
+            >
+              Projects
+            </NavLink>
+
             <button
               type="button"
               className="mt-1 flex w-full cursor-not-allowed items-center rounded-xl px-3 py-2 text-left text-slate-500/60 ring-1 ring-slate-800/60"

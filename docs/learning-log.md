@@ -173,7 +173,6 @@ The platform is also a personal mastery journey focused on advanced backend arch
 ### Testing
 
 - Clean separation of unit tests vs integration tests
-
 - Added full coverage for workspace switching logic:
   - Successful switch
   - Clearing active workspace
@@ -263,6 +262,146 @@ The platform is also a personal mastery journey focused on advanced backend arch
 
 ---
 
+## **Day 12 – UI Shell Lock-In & Visual Alignment**
+
+### UX / UI
+
+- Locked in the current **ForgeCloud UI shell** for this phase:
+  - `AppShell` layout (header + sidebar + main content)
+  - Dark shell with light content cards as v1 baseline
+- Restyled:
+  - `LoginPage`
+  - `WorkspacePage`
+  - `ProfilePage`
+  - `OrganizationSettingsPage`
+    To feel visually consistent and “SaaS-like” without over-investing in design polish yet.
+
+- Sidebar structure stabilized:
+  - Navigation: Overview, Projects
+  - Modules placeholders: Sentinel, Atlas, Costs (marked “Coming soon”)
+  - Account: Workspaces, Profile
+
+### Product Decisions
+
+- Decided to **postpone big UX redesign** to a dedicated “UI V2” milestone:
+  - Current goal is **functionality and domain modeling**, not pixel perfection.
+- Kept **“Continue with Google”** button visible on Login, but:
+  - Not wired to backend yet
+  - Explicitly treated as a future milestone
+
+**Learned:** when to stop polishing and move forward with features; how to lock a v1 UX shell so you can ship functionality faster while keeping a consistent experience.
+
+---
+
+## **Day 13 – Multi-Tenant Projects & Active Workspace Hardening**
+
+### Backend – Projects & Active Organization
+
+- Introduced **`Project`** entity with multi-tenant scoping:
+  - Fields: `id`, `organizationId`, `name`, `project_key` (`key`), `description`, `status`, `visibility`
+  - Relations:
+    - `Project` → `Organization` (many-to-one)
+    - `Project` → `User` as `creator` and `lastUpdatedBy`
+
+- Created **ProjectRepository** with:
+  - `findByOrganization(organizationId)`
+  - `findByOrganizationAndKey(organizationId, key)`
+  - `createForOrganization(organizationId, createdByUserId, payload)`
+
+- Implemented **ProjectService**:
+  - `getActiveOrganizationIdForUser(userId)`:
+    - Loads user by `userId`
+    - If no user → `AuthError`
+    - If `activeOrganizationId` set → uses it
+    - Else:
+      - Uses `OrganizationService.getOrganizationsForUser(userId)`
+      - If no memberships → `ValidationError` (“User is not a member of any organization”)
+      - Else:
+        - Picks first org
+        - Persists it into `user.activeOrganizationId`
+        - Returns that id
+  - `getProjectsForUser(userId)`:
+    - Resolves active org via method above
+    - Returns projects for that org
+  - `createProjectForUser(userId, input)`:
+    - Resolves active org
+    - Ensures project key is **unique per organization**
+    - Creates project with default `visibility = PRIVATE` if not provided
+
+- **Controller & Routes**:
+  - `GET /projects` (auth required)
+    - Uses `ProjectService.getProjectsForUser(req.user.id)`
+    - Returns `{ projects }`
+  - `POST /projects` (auth + validation)
+    - Uses `CreateProjectDto` for validation
+    - Delegates to `ProjectService.createProjectForUser`
+    - Returns created project with `201`
+
+- **Auth & Active Organization**:
+  - `PATCH /auth/active-organization`:
+    - Already implemented previously
+    - Used by frontend to change active workspace
+  - `AuthController.updateActiveOrganization`:
+    - Validates auth
+    - Accepts `organizationId` or `null`
+    - Delegates to service and returns updated session payload
+
+### Frontend – Projects UI & Workspace Integration
+
+- Added **`ProjectsPage`**:
+  - Fetches projects via `GET /projects` for the **current active organization**
+  - Shows:
+    - Header with title and `Projects: X` count
+    - Create project form:
+      - `name`
+      - `key` (auto uppercased)
+      - `description` (optional)
+      - `visibility` (`PRIVATE`, `INTERNAL`, `PUBLIC`)
+    - Existing projects list:
+      - Key chip (mono)
+      - Name
+      - Optional description
+      - Visibility and created date
+
+- Wired routing & navigation:
+  - New protected route: `/projects` inside `AppShell`
+  - Sidebar: “Projects” link under Navigation, with active state styling
+
+- **Workspace + Header Behavior**:
+  - Workspace dropdown in header uses `setActiveOrgId` which:
+    - Calls `PATCH /auth/active-organization`
+    - Reloads session (`refresh`) to keep backend + frontend in sync
+  - `ProjectsPage` transparently uses active org from session; no orgId is ever trusted from client input.
+
+### Testing
+
+- **Unit Tests**:
+  - `project.service.test.ts`:
+    - Active org resolution:
+      - User not found → `AuthError`
+      - User with no active org and no memberships → `ValidationError`
+      - User with active org set → uses it
+      - User with no active org but memberships → picks first membership and persists `activeOrganizationId`
+    - `getProjectsForUser` uses scoped org
+    - `createProjectForUser`:
+      - Enforces unique key per organization
+      - Allows same key in different organizations
+
+- **Integration Tests**:
+  - `project.int.test.ts`:
+    - `GET /projects` requires auth
+    - Projects are scoped per active organization:
+      - Switching active org changes `/projects` results
+    - `POST /projects`:
+      - Requires auth
+      - Enforces unique key per org, but allows same key in another org when active org changes
+
+- All backend tests passing: **full suite green**.
+
+**Learned:** how to properly model multi-tenant projects, enforce scoping by active organization without trusting the client, and back everything with unit + integration tests. This is the core pattern that Sentinel/Atlas/Costs modules will reuse.
+
+---
+
 # 🧠 Final Vision – Confirmed Alignment
 
 ForgeCloud will:
@@ -273,29 +412,3 @@ ForgeCloud will:
 - Use advanced indexing and query optimization
 - Deliver a true enterprise SaaS architecture
 - Become your flagship portfolio project and learning platform
-
-You have fully aligned on vision, mission, modules, and learning goals.
-
----
-
-# 🎯 Upcoming Focus (Week 2 – Core Domain & First Modules)
-
-### **1. User Profile & Organization Layer**
-
-- Organization listing for current user
-- Workspace switching improvements
-- My Organization page
-
-### **2. Begin Observability/Logs Module**
-
-- Log model
-- Log ingestion API
-- Indexing & pagination strategy
-
-### **3. Prepare for Shadowserver Integration**
-
-- SFTP utilities
-- Cron polling pipeline
-- Report normalization
-
----

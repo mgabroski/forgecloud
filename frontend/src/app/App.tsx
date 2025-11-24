@@ -7,6 +7,7 @@ import ProtectedRoute from '@app/ProtectedRoute';
 import { AppShell } from '@app/layout/AppShell';
 import { WorkspacePage } from '@features/workspace/WorkspacePage';
 import { OrganizationSettingsPage } from '@features/workspace/OrganizationSettingsPage';
+import { ProjectsPage } from '@features/projects/ProjectsPage';
 
 import { ForgeCloudUXDemo } from '../dev/ForgeCloudUXDemo';
 
@@ -30,6 +31,17 @@ function App() {
           <ProtectedRoute>
             <AppShell>
               <DashboardPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/projects"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <ProjectsPage />
             </AppShell>
           </ProtectedRoute>
         }

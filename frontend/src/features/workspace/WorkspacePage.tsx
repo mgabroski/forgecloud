@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@features/session/SessionProvider';
 import type { OrganizationSummary, OrganizationRole } from '@features/session/types';
+import { apiGet, ApiError } from '@shared/api/client';
 
 function renderRoleBadge(role: OrganizationRole) {
   switch (role) {
@@ -29,7 +31,45 @@ function renderRoleBadge(role: OrganizationRole) {
 export function WorkspacePage() {
   const { status, user, organizations, activeOrgId, error } = useSession();
 
+  const [projectCount, setProjectCount] = useState<number | null>(null);
+  const [projectError, setProjectError] = useState<string | null>(null);
+
   const isLoading = status === 'idle' || status === 'loading';
+
+  // -----------------------------------------
+  // Load project count for active organization
+  // -----------------------------------------
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadProjects = async () => {
+      if (!activeOrgId) return;
+
+      try {
+        const res = await apiGet<{ data: { projects: unknown[] } }>('/projects');
+        if (cancelled) return;
+
+        const count = Array.isArray(res.data.projects) ? res.data.projects.length : 0;
+        setProjectCount(count);
+      } catch (err) {
+        if (cancelled) return;
+
+        if (err instanceof ApiError) {
+          setProjectError(err.message);
+        } else {
+          setProjectError('Failed to load projects.');
+        }
+      }
+    };
+
+    void loadProjects();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeOrgId]);
+
+  // -----------------------------------------
 
   if (isLoading) {
     return (
@@ -50,8 +90,6 @@ export function WorkspacePage() {
   }
 
   if (status === 'unauthenticated' || !user) {
-    // Inside AppShell this should normally not happen,
-    // but we keep a defensive state.
     return (
       <div className="mx-auto max-w-6xl px-4 py-8">
         <p className="text-sm text-zinc-500">No active session. Please sign in again.</p>
@@ -87,7 +125,7 @@ export function WorkspacePage() {
         )}
       </header>
 
-      {/* No organizations (future-proof) */}
+      {/* No organizations */}
       {orgCount === 0 && (
         <section className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-6">
           <p className="text-sm text-zinc-600">You&apos;re not a member of any workspace yet.</p>
@@ -103,7 +141,8 @@ export function WorkspacePage() {
           <h2 className="text-sm font-medium text-zinc-900">Active workspace</h2>
 
           {activeOrg ? (
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              {/* Left side */}
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-base font-semibold text-zinc-900">{activeOrg.name}</p>
@@ -120,8 +159,25 @@ export function WorkspacePage() {
                 </p>
               </div>
 
-              <div className="mt-2 text-xs text-zinc-400 sm:mt-0">
-                Switching workspaces is done from the header workspace dropdown.
+              {/* Right side — Projects count */}
+              <div className="text-right text-xs text-zinc-500">
+                {projectError ? (
+                  <span className="text-red-500">{projectError}</span>
+                ) : projectCount === null ? (
+                  <span className="text-zinc-400">Loading projects…</span>
+                ) : (
+                  <>
+                    <div className="text-sm font-medium text-zinc-900">
+                      Projects: {projectCount}
+                    </div>
+                    <Link
+                      to="/projects"
+                      className="text-[11px] font-medium text-sky-600 hover:text-sky-500 hover:underline"
+                    >
+                      View projects →
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           ) : (
@@ -164,13 +220,11 @@ export function WorkspacePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {isActive && (
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-                        Current
-                      </span>
-                    )}
-                  </div>
+                  {isActive && (
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                      Current
+                    </span>
+                  )}
                 </div>
               );
             })}

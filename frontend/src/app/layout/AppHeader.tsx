@@ -1,6 +1,7 @@
-// frontend/src/app/layout/AppHeader.tsx
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@features/session/SessionProvider';
+import { apiPatch } from '@shared/api/client';
 
 function getInitials(nameOrEmail: string | undefined): string {
   if (!nameOrEmail) return 'FC';
@@ -14,11 +15,12 @@ function getInitials(nameOrEmail: string | undefined): string {
 }
 
 export function AppHeader() {
-  const { user, organizations, activeOrgId, setActiveOrgId, logout } = useSession();
+  const { user, organizations, activeOrgId, setActiveOrgId, refresh, logout } = useSession();
   const navigate = useNavigate();
 
-  const activeOrg = organizations.find((org) => org.id === activeOrgId) ?? organizations[0];
+  const [isSwitching, setIsSwitching] = useState(false);
 
+  const activeOrg = organizations.find((o) => o.id === activeOrgId) ?? organizations[0];
   const displayName = user?.fullName || user?.email || 'Loading user…';
   const initials = getInitials(user?.fullName || user?.email);
 
@@ -33,6 +35,36 @@ export function AppHeader() {
 
   const handleOpenWorkspace = () => {
     navigate('/workspace');
+  };
+
+  /**
+   * Handles workspace switching.
+   * 1. Call backend PATCH /auth/active-organization
+   * 2. Update local activeOrgId for instant UI feedback
+   * 3. Refresh full session from backend (/auth/me)
+   */
+  const handleChangeOrg = async (newOrgId: string) => {
+    if (!newOrgId || newOrgId === activeOrgId) return;
+
+    try {
+      setIsSwitching(true);
+
+      // Backend DTO uses { organizationId: string | null }
+      await apiPatch('/auth/active-organization', {
+        organizationId: newOrgId,
+      });
+
+      // Optimistic update
+      setActiveOrgId(newOrgId);
+
+      // Ensure frontend session is fully in sync with backend
+      await refresh();
+    } catch (err) {
+      // In future we can show toast here
+      console.error('Failed to switch organization:', err);
+    } finally {
+      setIsSwitching(false);
+    }
   };
 
   return (
@@ -61,12 +93,14 @@ export function AppHeader() {
             <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               Workspace
             </span>
+
             {organizations.length > 0 ? (
               <>
                 <select
                   value={activeOrg?.id ?? ''}
-                  onChange={(e) => setActiveOrgId(e.target.value || null)}
-                  className="min-w-[11rem] rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-100 shadow-sm outline-none ring-0 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/60"
+                  disabled={isSwitching}
+                  onChange={(e) => void handleChangeOrg(e.target.value)}
+                  className="min-w-[11rem] rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-100 shadow-sm outline-none ring-0 disabled:opacity-60 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/60"
                 >
                   {organizations.map((org) => (
                     <option key={org.id} value={org.id}>
