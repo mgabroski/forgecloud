@@ -19,7 +19,8 @@
     "test:integration": "NODE_ENV=test jest --selectProjects integration",
     "test:all": "NODE_ENV=test jest",
     "test:watch": "NODE_ENV=test jest --watch --selectProjects unit",
-    "test:ci": "NODE_ENV=test jest --runInBand --coverage --selectProjects integration"
+    "test:ci": "NODE_ENV=test jest --runInBand --coverage --selectProjects integration",
+    "demo:payment-log": "NODE_ENV=development ts-node src/scripts/demo-payment-producer.ts"
   },
   "dependencies": {
     "argon2": "^0.44.0",

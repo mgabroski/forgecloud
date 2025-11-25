@@ -11,6 +11,7 @@ import {
   organizationService,
   type UserOrganizationSummary,
 } from '../organizations/organization.service';
+import { sentinelInternalLogger } from '../sentinel/internal/sentinel-logger.service';
 
 const rawJwtSecret = env.JWT_SECRET;
 
@@ -56,6 +57,23 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _passwordHash, ...safeUser } = user;
+
+    // 🔐 Audit: successful login
+    void sentinelInternalLogger
+      .logAuditEventForUser(user.id, {
+        event: 'auth.login.success',
+        message: `User ${user.email} logged in`,
+        context: {
+          userId: user.id,
+          email: user.email,
+          authProvider: user.authProvider,
+        },
+      })
+      .catch((err) => {
+        // We never want audit logging to break login
+        // eslint-disable-next-line no-console
+        console.error('Failed to log auth.login.success audit event', err);
+      });
 
     return {
       accessToken: token,
@@ -128,6 +146,8 @@ export class AuthService {
       throw new AuthError('User not found', 'USER_NOT_FOUND');
     }
 
+    const previousOrganizationId = user.activeOrganizationId ?? null;
+
     if (organizationId !== null) {
       const userOrgs = await organizationService.getOrganizationsForUser(user.id);
       const hasMembership = userOrgs.some((org) => org.id === organizationId);
@@ -143,8 +163,25 @@ export class AuthService {
     }
 
     const saved = await userRepository.save(user);
+    const session = await this.buildSession(saved);
 
-    return this.buildSession(saved);
+    // 🔐 Audit: workspace / active organization change
+    void sentinelInternalLogger
+      .logAuditEventForUser(user.id, {
+        event: 'workspace.active_organization.changed',
+        message: 'User changed active organization',
+        context: {
+          userId: user.id,
+          previousOrganizationId,
+          newOrganizationId: organizationId,
+        },
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('Failed to log workspace.active_organization.changed audit event', err);
+      });
+
+    return session;
   }
 }
 

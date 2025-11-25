@@ -1,4 +1,3 @@
-// src/app/layout/AppShell.tsx
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AppHeader } from './AppHeader';
@@ -53,17 +52,23 @@ export function AppShell({ children }: AppShellProps) {
               Projects
             </NavLink>
 
-            <button
-              type="button"
-              className="mt-1 flex w-full cursor-not-allowed items-center rounded-xl px-3 py-2 text-left text-slate-500/60 ring-1 ring-slate-800/60"
+            {/* 🔐 Sentinel module link (Alpha) */}
+            <NavLink
+              to="/sentinel"
+              className={({ isActive }) =>
+                [
+                  'mt-1 flex items-center rounded-xl px-3 py-2 text-left text-xs transition-colors',
+                  isActive
+                    ? 'bg-slate-800 text-slate-50'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100',
+                ].join(' ')
+              }
             >
-              <span className="text-xs font-medium text-slate-400">
-                Sentinel (logs &amp; security)
+              <span className="text-xs font-medium">Sentinel (logs &amp; security)</span>
+              <span className="ml-auto rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase text-sky-300">
+                Alpha
               </span>
-              <span className="ml-auto rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-400">
-                Coming soon
-              </span>
-            </button>
+            </NavLink>
 
             <button
               type="button"

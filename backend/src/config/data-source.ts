@@ -6,6 +6,8 @@ import { User } from '../modules/users/user.entity';
 import { Organization } from '../modules/organizations/organization.entity';
 import { OrganizationMembership } from '../modules/organizations/organization-membership.entity';
 import { Project } from '../modules/projects/project.entity';
+import { LogSource } from '../modules/sentinel/log-source.entity';
+import { LogEntry } from '../modules/sentinel/log-entry.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -17,7 +19,7 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: false,
 
-  entities: [User, Organization, OrganizationMembership, Project],
+  entities: [User, Organization, OrganizationMembership, Project, LogSource, LogEntry],
 
   migrations: ['src/migrations/*.{ts,js}'],
 });

@@ -8,6 +8,7 @@ import { AppShell } from '@app/layout/AppShell';
 import { WorkspacePage } from '@features/workspace/WorkspacePage';
 import { OrganizationSettingsPage } from '@features/workspace/OrganizationSettingsPage';
 import { ProjectsPage } from '@features/projects/ProjectsPage';
+import { SentinelPage } from '@features/sentinel/SentinelPage';
 
 import { ForgeCloudUXDemo } from '../dev/ForgeCloudUXDemo';
 
@@ -42,6 +43,17 @@ function App() {
           <ProtectedRoute>
             <AppShell>
               <ProjectsPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/sentinel"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <SentinelPage />
             </AppShell>
           </ProtectedRoute>
         }
